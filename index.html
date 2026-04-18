@@ -2806,7 +2806,7 @@ function camStop(){
   const _fspb=document.getElementById('cam-fs-portrait-btn');
   if(_fspb) _fspb.style.background='rgba(255,255,255,.22)';
   const _ps=document.getElementById('cam-portrait-slider');
-  if(_ps) _ps.classList.remove('visible');
+  if(_ps){ _ps.classList.remove('visible'); _ps.style.display='none'; }
   document.getElementById('cam-overlay').classList.remove('active');
   if(camFsActive) camExitFullscreen();
   document.querySelectorAll('#btnCam').forEach(b=>{b.classList.remove('active');});
@@ -2836,8 +2836,9 @@ function camFullscreen(){
   if(ico) ico.innerHTML='<polyline points="6,1 1,1 1,6"/><polyline points="12,1 17,1 17,6"/><polyline points="17,12 17,17 12,17"/><polyline points="1,12 1,17 6,17"/>';
   // Orientáció hint megjelenítése fs nézetben is
   setTimeout(showFsOrientHint, 300);
-  // Portré csúszka értékének szinkronizálása (mindig látható fs-ben)
+  // Portré csúszka szinkronizálása (csak ha portré mód aktív)
   const fsSlider = document.getElementById('cam-fs-portrait-slider');
+  if(fsSlider) fsSlider.style.display = portraitMode ? 'flex' : 'none';
   const fsSlInput = fsSlider ? fsSlider.querySelector('input') : null;
   if(fsSlInput) fsSlInput.value = _bgBlurAmount;
   const fsSlVal = document.getElementById('cam-fs-slval');
@@ -2944,11 +2945,18 @@ async function togglePortraitMode(){
   // Fullscreen portré gomb szinkronizálása
   const fsBtn = document.getElementById('cam-fs-portrait-btn');
   if(fsBtn) fsBtn.style.background = portraitMode ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.22)';
-  // FS blur csúszka — mindig látható fs-ben, csak értéket szinkronizálunk
+  // FS blur csúszka — portré mód szerint mutatjuk/rejtjük
   const fsSl = document.getElementById('cam-fs-portrait-slider');
-  if(fsSl){ const fsi=fsSl.querySelector('input'); if(fsi) fsi.value=_bgBlurAmount; }
+  if(fsSl){
+    fsSl.style.display = portraitMode ? 'flex' : 'none';
+    const fsi = fsSl.querySelector('input');
+    if(fsi) fsi.value = _bgBlurAmount;
+  }
   const slider = document.getElementById('cam-portrait-slider');
-  if(slider) slider.classList.toggle('visible', portraitMode);
+  if(slider){
+    slider.style.display = portraitMode ? 'flex' : 'none';
+    slider.classList.toggle('visible', portraitMode);
+  }
   if(portraitMode && !_segReady){
     await initSegmenter();
   } else if(!portraitMode){
@@ -4277,10 +4285,10 @@ window.addEventListener('resize',()=>{
       -webkit-tap-highlight-color:transparent;
     ">✕</button>
   </div>
-  <!-- Portré blur csúszka — fullscreen nézetben mindig látható -->
+  <!-- Portré blur csúszka — fullscreen nézetben, portré módban látható -->
   <div id="cam-fs-portrait-slider" style="
     position:absolute;top:52px;right:12px;
-    display:flex;align-items:center;gap:6px;
+    display:none;align-items:center;gap:6px;
     background:rgba(0,0,0,.55);border:1px solid rgba(201,168,76,.3);
     border-radius:16px;padding:5px 10px;z-index:3;backdrop-filter:blur(10px);
   ">
