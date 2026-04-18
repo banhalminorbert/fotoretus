@@ -272,6 +272,31 @@ body.cam-active-mode [data-tab="text"]{
   opacity:.55;
 }
 
+/* ── Kamera tab kiemelése live módban ── */
+body.cam-active-mode [data-tab="camera"],
+body.cam-active-mode .mtab[data-tab="camera"]{
+  color:#C9A84C !important;
+  background:rgba(201,168,76,.15) !important;
+  border-radius:10px;
+}
+body.cam-active-mode [data-tab="camera"] .stab-ico,
+body.cam-active-mode .mtab[data-tab="camera"] .mtab-ico{
+  opacity:1 !important;
+}
+/* Pulzáló pötty a kamera ikonon */
+body.cam-active-mode [data-tab="camera"]::after,
+body.cam-active-mode .mtab[data-tab="camera"]::after{
+  content:'';
+  position:absolute;
+  top:4px;
+  right:4px;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#C9A84C;
+  animation:blnk 1.4s infinite;
+}
+
 
 /* ── Orientáció tipp sáv a live kameránál ── */
 #cam-orient-hint{
@@ -631,7 +656,7 @@ const STRINGS = {
     secCap:'Felirat', secAnim:'Animáció', secShare:'Megosztás',
     dragHint:'Húzd ide a képet', orClick:'vagy kattints', formats:'JPG · PNG · WebP · GIF',
     changeImg:'Csere', strength:'Erősség', strengthNote:'0% = eredeti · 100% = teljes szűrő',
-    grain:'Szemcse', scratch:'Karcolás', grainFine:'Finom', grainMedium:'Közepes', grainCoarse:'Durva', grainColor:'Színes',
+    grain:'Szemcse', grainFine:'Finom', grainMedium:'Közepes', grainCoarse:'Durva', grainColor:'Színes',
     captionPh:'Írj felirat szöveget…', fontSize:'Méret', fontColor:'Szín', fontOpacity:'Átlátszóság',
     posX:'Vízszintes', posY:'Függőleges', clickToPlace:'Kattints a képre → elhelyezés',
     shadow:'Árnyék', bgBar:'Háttérsáv', speed:'Sebesség', reset:'↺ Visszaállítás',
@@ -666,7 +691,7 @@ const STRINGS = {
     secCap:'Caption', secAnim:'Animation', secShare:'Share',
     dragHint:'Drop your image here', orClick:'or click', formats:'JPG · PNG · WebP · GIF',
     changeImg:'Change', strength:'Strength', strengthNote:'0% = original · 100% = full filter',
-    grain:'Grain', scratch:'Scratch', grainFine:'Fine', grainMedium:'Medium', grainCoarse:'Coarse', grainColor:'Color',
+    grain:'Grain', grainFine:'Fine', grainMedium:'Medium', grainCoarse:'Coarse', grainColor:'Color',
     captionPh:'Type caption text…', fontSize:'Size', fontColor:'Color', fontOpacity:'Opacity',
     posX:'Horizontal', posY:'Vertical', clickToPlace:'Click image → place',
     shadow:'Shadow', bgBar:'Background bar', speed:'Speed', reset:'↺ Reset',
@@ -700,7 +725,7 @@ const STRINGS = {
     secCap:'Beschriftung', secAnim:'Animation', secShare:'Teilen',
     dragHint:'Bild hier ablegen', orClick:'oder klicken', formats:'JPG · PNG · WebP · GIF',
     changeImg:'Ändern', strength:'Stärke', strengthNote:'0% = Original · 100% = voller Filter',
-    grain:'Korn', scratch:'Kratzer', grainFine:'Fein', grainMedium:'Mittel', grainCoarse:'Grob', grainColor:'Farbe',
+    grain:'Korn', grainFine:'Fein', grainMedium:'Mittel', grainCoarse:'Grob', grainColor:'Farbe',
     captionPh:'Text eingeben…', fontSize:'Größe', fontColor:'Farbe', fontOpacity:'Deckkraft',
     posX:'Horizontal', posY:'Vertikal', clickToPlace:'Auf Bild klicken → platzieren',
     shadow:'Schatten', bgBar:'Hintergrundleiste', speed:'Geschwindigkeit', reset:'↺ Zurücksetzen',
@@ -878,10 +903,10 @@ const FONTS=[
   {id:'rocksalt',    lbl:'Rock Salt',    css:'"Rock Salt", cursive'},
 ];
 const AR_BTNS=[
-  {ar:'original',label:'Free',w:22,h:18},{ar:'1:1',label:'1:1',w:18,h:18},
-  {ar:'16:9',label:'16:9',w:22,h:13},{ar:'9:16',label:'9:16',w:13,h:22},
-  {ar:'4:3',label:'4:3',w:20,h:16},{ar:'3:4',label:'3:4',w:16,h:20},
-  {ar:'2:3',label:'2:3',w:14,h:20},{ar:'3:2',label:'3:2',w:20,h:14},
+  {ar:'original',label:'Free',w:22,h:17},{ar:'1:1',label:'1:1',w:18,h:18},
+  {ar:'16:9',label:'16:9',w:22,h:12},{ar:'9:16',label:'9:16',w:12,h:22},
+  {ar:'4:3',label:'4:3',w:22,h:17},{ar:'3:4',label:'3:4',w:17,h:22},
+  {ar:'2:3',label:'2:3',w:15,h:22},{ar:'3:2',label:'3:2',w:22,h:15},
 ];
 const TABS=[
   {id:'camera', icoKey:'tabCamera',  ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="5" width="16" height="11" rx="2"/><circle cx="9" cy="10.5" r="3"/><path d="M5.5 5V4h4v1"/><circle cx="14.5" cy="7" r="1" fill="currentColor" stroke="none"/></svg>', action:'camera'},
@@ -914,7 +939,7 @@ let pointerDownPos={x:0,y:0};
 let pinchDist0=0, pinchZoom0=1;
 let activeTab='image';
 const adj={brightness:100,contrast:100,saturation:100,hue:0,blur:0,fade:0,grayscale:0,sepia:0,vignette:0};
-const grain={amount:0,type:'fine',scratch:0};
+const grain={amount:0,type:'fine'};
 const cap={text:'',font:'sans',size:36,color:'#ffffff',opacity:100,x:50,y:85,shadow:true,bgBar:false};
 
 // ══════════════════════════════════════════
@@ -1678,7 +1703,7 @@ function applyLumGrain(c,w,h,baseAmount){
 }
 
 function applyGrain(c,w,h){
-  if(grain.amount<=0&&grain.scratch<=0) return;
+  if(grain.amount<=0&&0<=0) return;
   const id=c.getImageData(0,0,w,h);const d=id.data;
   const intensity=grain.amount/100*90;
   if(grain.amount>0){
@@ -1699,8 +1724,8 @@ function applyGrain(c,w,h){
       }}
     }}
   }
-  if(grain.scratch>0){
-    const num=Math.floor(grain.scratch/100*30);
+  if(0>0){
+    const num=Math.floor(0/100*30);
     for(let n=0;n<num;n++){
       const x=Math.floor(Math.random()*w),len=Math.floor(Math.random()*h*.3+h*.1);
       const yS=Math.floor(Math.random()*(h-len));const dark=Math.random()>.5;
@@ -1888,7 +1913,7 @@ function drawFrame(ts){
     ctx.globalAlpha=1;
   }
 
-  if(grain.amount>0||grain.scratch>0) applyGrain(ctx,w,h);
+  if(grain.amount>0) applyGrain(ctx,w,h);
   if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(ctx,w,h,bwp.grain*42);}
   drawCaption(ctx,w,h);
 }
@@ -2161,12 +2186,6 @@ function buildPanel_Adjust(container){
   });
   grainSec.appendChild(chips);
 
-  const scRow=document.createElement('div');scRow.className='srow';
-  const scv=document.createElement('span');scv.className='sval';scv.textContent=grain.scratch+'%';
-  scRow.innerHTML=`<span class="slbl">${T('scratch')}</span>`;
-  const sci=document.createElement('input');sci.type='range';sci.className='sinput';sci.min=0;sci.max=100;sci.value=grain.scratch;
-  sci.addEventListener('input',e=>{grain.scratch=parseInt(e.target.value);scv.textContent=grain.scratch+'%';frameOrCam();});
-  scRow.appendChild(sci);scRow.appendChild(scv);grainSec.appendChild(scRow);
 }
 
 function buildPanel_Frame(container){
@@ -2535,7 +2554,7 @@ function downloadHD(){
       imgCanvas=bl;
     }
     oc.drawImage(imgCanvas,bS,bS,iW,iH);
-    if(grain.amount>0||grain.scratch>0) applyGrain(oc,outW,outH);
+    if(grain.amount>0) applyGrain(oc,outW,outH);
         if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,outW,outH,bwp.grain*42);}
     drawCaption(oc,outW,outH);
     off.toBlob(async blob=>{await dlBlob(blob,'VIPACH_polaroid_'+Date.now()+'.jpg');toast(T('downloadDone')+` (${outW}×${outH}px)`);});
@@ -2552,7 +2571,7 @@ function downloadHD(){
   const oc=off.getContext('2d');
   if(filterStrength<100){oc.drawImage(origImg,sx,sy,sw,sh,0,0,outW,outH);oc.globalAlpha=filterStrength/100;oc.drawImage(filtCanvas,0,0);oc.globalAlpha=1;}
   else{oc.drawImage(filtCanvas,0,0);}
-  if(grain.amount>0||grain.scratch>0) applyGrain(oc,outW,outH);
+  if(grain.amount>0) applyGrain(oc,outW,outH);
     if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,outW,outH,bwp.grain*42);}
   drawCaption(oc,outW,outH);
   off.toBlob(async blob=>{await dlBlob(blob,'VIPACH_'+Date.now()+'.jpg');toast(T('downloadDone')+` (${outW}×${outH}px)`);});
@@ -2859,6 +2878,9 @@ function camFullscreen(){
 function camExitFullscreen(){
   camFsActive=false;
   document.getElementById('cam-fs-wrap').classList.remove('active');
+  // FS slider reset — ne ragadjon be
+  const _fssl=document.getElementById('cam-fs-portrait-slider');
+  if(_fssl) _fssl.style.display='none';
   // Restore icon
   const ico=document.getElementById('cam-fs-ico');
   if(ico) ico.innerHTML='<polyline points="1,6 1,1 6,1"/><polyline points="12,1 17,1 17,6"/><polyline points="17,12 17,17 12,17"/><polyline points="6,17 1,17 1,12"/>';
@@ -2946,11 +2968,14 @@ async function togglePortraitMode(){
   const fsBtn = document.getElementById('cam-fs-portrait-btn');
   if(fsBtn) fsBtn.style.background = portraitMode ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.22)';
   // FS blur csúszka — portré mód szerint mutatjuk/rejtjük
-  const fsSl = document.getElementById('cam-fs-portrait-slider');
-  if(fsSl){
-    fsSl.style.display = portraitMode ? 'flex' : 'none';
-    const fsi = fsSl.querySelector('input');
-    if(fsi) fsi.value = _bgBlurAmount;
+  // FS slider: csak ha fullscreen aktív, akkor szinkronizálunk
+  if(camFsActive){
+    const fsSl = document.getElementById('cam-fs-portrait-slider');
+    if(fsSl){
+      fsSl.style.display = portraitMode ? 'flex' : 'none';
+      const fsi = fsSl.querySelector('input');
+      if(fsi) fsi.value = _bgBlurAmount;
+    }
   }
   const slider = document.getElementById('cam-portrait-slider');
   if(slider){
@@ -3099,7 +3124,7 @@ function camLoop(ts){
   oc.drawImage(camVideo,0,0,sw,sh);
   // Apply filters at display resolution
   applyFiltersToDrawnCtx(oc,sw,sh);
-  if(grain.amount>0||grain.scratch>0) applyGrain(oc,sw,sh);
+  if(grain.amount>0) applyGrain(oc,sw,sh);
   if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,sw,sh,bwp.grain*42);}
   // Portré mód — háttér elmosás (async, nem blokkolja a loop-ot)
   if(portraitMode&&_segReady){
@@ -3154,7 +3179,7 @@ async function camCapture(){
     const iCtx=iOff.getContext('2d');
     iCtx.drawImage(camVideo,0,0,vw,vh);
     applyFiltersToDrawnCtx(iCtx,vw,vh);
-    if(grain.amount>0||grain.scratch>0) applyGrain(iCtx,vw,vh);
+    if(grain.amount>0) applyGrain(iCtx,vw,vh);
     if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(iCtx,vw,vh,bwp.grain*42);}
     pc.drawImage(iOff,bS,bT,vw,vh);
     pc.strokeStyle='rgba(0,0,0,.06)';pc.lineWidth=1;pc.strokeRect(bS,bT,vw,vh);
@@ -3164,7 +3189,7 @@ async function camCapture(){
     const oc=finalCanvas.getContext('2d');
     oc.drawImage(camVideo,0,0,vw,vh);
     applyFiltersToDrawnCtx(oc,vw,vh);
-    if(grain.amount>0||grain.scratch>0) applyGrain(oc,vw,vh);
+    if(grain.amount>0) applyGrain(oc,vw,vh);
     if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,vw,vh,bwp.grain*42);}
     if(cap.text.trim()) drawCaption(oc,vw,vh);
   }
@@ -3193,6 +3218,13 @@ const _helpBodyHU = `
           <div class="help-step-txt">
             <strong>1. lépés — Kamera vagy feltöltés! 🤳</strong>
             <span>A <b>Kamera</b> fül az első — azonnal látod magad mindenféle szűrőkkel! Nyomd meg a nagy fehér kört egy fotóhoz. A <b>Hozzáadás (+)</b> fülön pedig feltölthetsz bármilyen képet: JPG, PNG, GIF — akármi megy! 🐱</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">🟡</div>
+          <div class="help-step-txt">
+            <strong>Az arany kamera ikon jelzi: live mód be van kapcsolva! ✨</strong>
+            <span>Amikor a kamera fut, a <b>KAMERA</b> fül <b>arany színre</b> vált és egy kis <b>arany pötty</b> pulzál rajta. Ez jelzi, hogy a többi menü (Fotó, Keret, Mozgás) most szürkén, nem kattinthatóan jelenik meg — mert a kamera él. Ha szerkeszteni szeretnéd a képet, először <b>kattints a kamera ikonra hogy kikapcsold</b>, vagy nyomd meg a kamera nézetben az <b>✕ gombot</b>! 📸</span>
           </div>
         </div>
         <div class="help-step">
@@ -3258,7 +3290,7 @@ const _helpBodyHU = `
           <div class="help-step-ico">🎞️</div>
           <div class="help-step-txt">
             <strong>Filmszem = régi mozifilm hatás! 🎦</strong>
-            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! A <b>Karcolás</b> meg piszkos karcolásokat tesz rá — mintha 100 éves lenne a fotó! 😎</span>
+            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! Finomtól a durvás szemcséig mindent beállíthatsz! 🎞️</span>
           </div>
         </div>
         <div class="help-step">
@@ -3432,7 +3464,7 @@ const _helpBodyHU = `
           <div class="help-idea">
             <div class="help-idea-ico">👻</div>
             <p>Szellemfotó</p>
-            <small>B&amp;W + filmszem 90% + Flicker animáció + karcolás</small>
+            <small>B&amp;W + filmszem 90% + Flicker animáció</small>
           </div>
           <div class="help-idea">
             <div class="help-idea-ico">🤖</div>
@@ -3539,6 +3571,10 @@ const HELP_CONTENT = {
         <strong>Step 1 — Camera or upload! 🤳</strong>
         <span>The <b>Camera</b> tab is first — see yourself live with filters! Press the big white circle to take a photo. On the <b>Photo (+)</b> tab you can upload any image: JPG, PNG, GIF — anything goes! 🐱</span>
       </div></div>
+      <div class="help-step"><div class="help-step-ico">🟡</div><div class="help-step-txt">
+        <strong>The golden camera icon means: live mode is on! ✨</strong>
+        <span>When the camera is running, the <b>CAMERA</b> tab turns <b>gold</b> and a small <b>gold dot</b> pulses on it. This means the other tabs (Photo, Frame, Motion) appear grayed out and unclickable — because the camera is live. To edit your photo, first <b>tap the camera icon to turn it off</b>, or press the <b>✕ button</b> in the camera view! 📸</span>
+      </div></div>
       <div class="help-step"><div class="help-step-ico">🖼️</div><div class="help-step-txt">
         <strong>Step 2 — Aspect ratio in the Frame tab! 📐</strong>
         <span>In the <b>Frame</b> tab you can set the <b>aspect ratio</b> (e.g. 1:1, 16:9, 9:16) and <b>zoom</b>! This is key before you start editing.</span>
@@ -3573,7 +3609,7 @@ const HELP_CONTENT = {
       </div></div>
       <div class="help-step"><div class="help-step-ico">🎞️</div><div class="help-step-txt">
         <strong>Film grain = old cinema effect! 🎦</strong>
-        <span>The <b>Grain</b> slider adds tiny particles to your photo — just like old movie film! <b>Scratch</b> adds dirty scratches, as if the photo is 100 years old! 😎</span>
+        <span>The <b>Grain</b> slider adds tiny particles to your photo — just like old movie film! From fine to coarse grain, everything is adjustable! 🎞️</span>
       </div></div>
     </div>
 
@@ -3693,6 +3729,10 @@ const HELP_CONTENT = {
         <strong>Schritt 1 — Kamera oder Upload! 🤳</strong>
         <span>Der <b>Kamera</b>-Tab ist der erste — sieh dich live mit Filtern! Drücke den großen weißen Kreis für ein Foto. Im <b>Foto (+)</b>-Tab kannst du beliebige Bilder hochladen: JPG, PNG, GIF — alles geht! 🐱</span>
       </div></div>
+      <div class="help-step"><div class="help-step-ico">🟡</div><div class="help-step-txt">
+        <strong>Das goldene Kamera-Symbol zeigt: Live-Modus ist an! ✨</strong>
+        <span>Wenn die Kamera läuft, wird der <b>KAMERA</b>-Tab <b>golden</b> und ein kleiner <b>goldener Punkt</b> blinkt darauf. Das bedeutet, dass die anderen Tabs (Foto, Rahmen, Bewegung) ausgegraut und nicht klickbar erscheinen — weil die Kamera live ist. Um dein Foto zu bearbeiten, tippe zuerst auf das <b>Kamera-Symbol zum Ausschalten</b> oder drücke den <b>✕-Button</b> in der Kameraansicht! 📸</span>
+      </div></div>
       <div class="help-step"><div class="help-step-ico">🖼️</div><div class="help-step-txt">
         <strong>Schritt 2 — Seitenverhältnis im Rahmen-Tab! 📐</strong>
         <span>Im <b>Rahmen</b>-Tab kannst du <b>Seitenverhältnis</b> (z.B. 1:1, 16:9, 9:16) und <b>Zoom</b> einstellen! Das ist wichtig vor dem Bearbeiten.</span>
@@ -3727,7 +3767,7 @@ const HELP_CONTENT = {
       </div></div>
       <div class="help-step"><div class="help-step-ico">🎞️</div><div class="help-step-txt">
         <strong>Filmkorn = alter Kinofilm-Effekt! 🎦</strong>
-        <span>Der <b>Korn</b>-Regler fügt kleine Partikel hinzu — genau wie alter Kinofilm! <b>Kratzer</b> fügt schmutzige Kratzer hinzu, als wäre das Foto 100 Jahre alt! 😎</span>
+        <span>Der <b>Korn</b>-Regler fügt kleine Partikel hinzu — genau wie alter Kinofilm! Von feinem bis grobem Korn ist alles einstellbar! 🎞️</span>
       </div></div>
     </div>
 
@@ -3925,6 +3965,13 @@ window.addEventListener('resize',()=>{
           </div>
         </div>
         <div class="help-step">
+          <div class="help-step-ico">🟡</div>
+          <div class="help-step-txt">
+            <strong>Az arany kamera ikon jelzi: live mód be van kapcsolva! ✨</strong>
+            <span>Amikor a kamera fut, a <b>KAMERA</b> fül <b>arany színre</b> vált és egy kis <b>arany pötty</b> pulzál rajta. Ez jelzi, hogy a többi menü (Fotó, Keret, Mozgás) most szürkén, nem kattinthatóan jelenik meg — mert a kamera él. Ha szerkeszteni szeretnéd a képet, először <b>kattints a kamera ikonra hogy kikapcsold</b>, vagy nyomd meg a kamera nézetben az <b>✕ gombot</b>! 📸</span>
+          </div>
+        </div>
+        <div class="help-step">
           <div class="help-step-ico">🖼️</div>
           <div class="help-step-txt">
             <strong>2. lépés — Képarány a Keret fülön! 📐</strong>
@@ -3987,7 +4034,7 @@ window.addEventListener('resize',()=>{
           <div class="help-step-ico">🎞️</div>
           <div class="help-step-txt">
             <strong>Filmszem = régi mozifilm hatás! 🎦</strong>
-            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! A <b>Karcolás</b> meg piszkos karcolásokat tesz rá — mintha 100 éves lenne a fotó! 😎</span>
+            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! Finomtól a durvás szemcséig mindent beállíthatsz! 🎞️</span>
           </div>
         </div>
         <div class="help-step">
@@ -4161,7 +4208,7 @@ window.addEventListener('resize',()=>{
           <div class="help-idea">
             <div class="help-idea-ico">👻</div>
             <p>Szellemfotó</p>
-            <small>B&amp;W + filmszem 90% + Flicker animáció + karcolás</small>
+            <small>B&amp;W + filmszem 90% + Flicker animáció</small>
           </div>
           <div class="help-idea">
             <div class="help-idea-ico">🤖</div>
