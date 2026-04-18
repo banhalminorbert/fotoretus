@@ -278,6 +278,7 @@ body.cam-active-mode .mtab[data-tab="camera"]{
   color:#C9A84C !important;
   background:rgba(201,168,76,.15) !important;
   border-radius:10px;
+  position:relative !important;
 }
 body.cam-active-mode [data-tab="camera"] .stab-ico,
 body.cam-active-mode .mtab[data-tab="camera"] .mtab-ico{
@@ -295,6 +296,7 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   border-radius:50%;
   background:#C9A84C;
   animation:blnk 1.4s infinite;
+  z-index:2;
 }
 
 
@@ -400,19 +402,19 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   body{overflow:hidden;height:100%}
   .app{flex-direction:column;overflow:hidden;flex:1;min-height:0}
   .sidebar{display:none}
-  .carea{order:1;flex:none;height:42vh;min-height:190px;border-bottom:1px solid rgba(255,255,255,.04)}
-  .mobile-tab-bar{display:flex;order:2;background:rgba(8,13,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.05);overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .carea{order:1;flex:none;height:50vh;min-height:220px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .mobile-tab-bar{display:flex;order:3;background:rgba(8,13,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .mobile-tab-bar::-webkit-scrollbar{display:none}
-  .mtab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.8);font-size:8.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 13px;transition:color .15s;border-top:1.5px solid transparent;-webkit-tap-highlight-color:transparent}
+  .mtab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.8);font-size:8.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 13px;transition:color .15s;border-top:1.5px solid transparent;-webkit-tap-highlight-color:transparent;position:relative}
   .mtab .mtab-ico{height:18px;display:flex;align-items:center;justify-content:center;opacity:.85;transition:opacity .15s}
   .mtab.active{color:var(--accent);border-top-color:var(--accent)}
   .mtab.active .mtab-ico{opacity:1}
-  .mobile-panel{order:3;flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:0;padding:8px;-webkit-overflow-scrolling:touch;min-height:0}
+  .mobile-panel{order:2;flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:0;padding:8px;-webkit-overflow-scrolling:touch;min-height:0}
   #m-footer{display:flex;order:4;padding:10px 14px 12px}
   .hdr{padding:0 10px}
   .logo-text-full{display:none}
   .btn .btn-txt{display:none}
-  .toast{bottom:68px}
+  .toast{bottom:130px}
   .canvas-hint{bottom:8px;font-size:10px}
   .lang-btn{font-size:13px;width:26px;height:22px}
   /* Exponáló gomb kisebb mobilon */
@@ -558,7 +560,7 @@ self.addEventListener('fetch',e=>{
       <div class="sidebar-content" id="d-panel"></div>
       <footer class="app-footer">
         <div class="app-footer-name">
-          <span><span class="footer-by">Készítette</span>: <strong>Be Smart Kids Club csapata</strong></span>
+          <span><span class="footer-by">Készítette</span>: <strong class="footer-team">Be Smart Kids Club csapata</strong></span>
           <span class="footer-counter-inline"><span id="visit-ctr" class="footer-counter-value">········</span></span>
         </div>
         <div class="app-footer-sub">
@@ -629,7 +631,7 @@ self.addEventListener('fetch',e=>{
 <div class="mobile-panel" id="m-panel"></div>
 <footer class="app-footer" id="m-footer" style="background:var(--surf);border-top:1px solid rgba(255,255,255,.05)">
   <div class="app-footer-name">
-    <span><span class="footer-by">Készítette</span>: <strong>Be Smart Kids Club csapata</strong></span>
+    <span><span class="footer-by">Készítette</span>: <strong class="footer-team">Be Smart Kids Club csapata</strong></span>
     <span class="footer-counter-inline"><span id="visit-ctr-m" class="footer-counter-value">········</span></span>
   </div>
   <div class="app-footer-sub">
@@ -655,7 +657,7 @@ const STRINGS = {
     secAdj:'Beállítások', secGrain:'Filmszem & Zaj', secFrame:'Keret típusa',
     secCap:'Felirat', secAnim:'Animáció', secShare:'Megosztás',
     dragHint:'Húzd ide a képet', orClick:'vagy kattints', formats:'JPG · PNG · WebP · GIF',
-    changeImg:'Csere', strength:'Erősség', strengthNote:'0% = eredeti · 100% = teljes szűrő',
+    changeImg:'Csere', imgFsOpen:'Kép megtekintése & zoom', strength:'Erősség', strengthNote:'0% = eredeti · 100% = teljes szűrő',
     grain:'Szemcse', grainFine:'Finom', grainMedium:'Közepes', grainCoarse:'Durva', grainColor:'Színes',
     captionPh:'Írj felirat szöveget…', fontSize:'Méret', fontColor:'Szín', fontOpacity:'Átlátszóság',
     posX:'Vízszintes', posY:'Függőleges', clickToPlace:'Kattints a képre → elhelyezés',
@@ -679,6 +681,7 @@ const STRINGS = {
     shareItemDownload:'Kép letöltése',
     shareItemFb:'Megosztás a VIPACH csoportban',
     footerBy:'Készítette', footerRights:'Minden jog fenntartva', footerFree:'Díjmentes',
+    teamName:'Be Smart Kids Club csapata', footerByAlt:'Fejlesztette',
     emptyTitle:'Tölts fel egy képet', emptySub:'Húzd ide, vagy kattints a panelre',
     imgFsHint:'Csippentés / görgetés = zoom · Húzás = mozgatás',
     camOrientWarn:'Forgasd vissza az eszközt álló helyzetbe', camOrientSub:'A kamera mód csak portré nézetben elérhető',
@@ -690,7 +693,7 @@ const STRINGS = {
     secAdj:'Adjustments', secGrain:'Film grain', secFrame:'Frame type',
     secCap:'Caption', secAnim:'Animation', secShare:'Share',
     dragHint:'Drop your image here', orClick:'or click', formats:'JPG · PNG · WebP · GIF',
-    changeImg:'Change', strength:'Strength', strengthNote:'0% = original · 100% = full filter',
+    changeImg:'Change', imgFsOpen:'View image & zoom', strength:'Strength', strengthNote:'0% = original · 100% = full filter',
     grain:'Grain', grainFine:'Fine', grainMedium:'Medium', grainCoarse:'Coarse', grainColor:'Color',
     captionPh:'Type caption text…', fontSize:'Size', fontColor:'Color', fontOpacity:'Opacity',
     posX:'Horizontal', posY:'Vertical', clickToPlace:'Click image → place',
@@ -713,6 +716,7 @@ const STRINGS = {
     shareItemDownload:'Download image',
     shareItemFb:'Share in VIPACH group',
     footerBy:'Created by', footerRights:'All rights reserved', footerFree:'Free to use',
+    teamName:'Be Smart Kids Club team', footerByAlt:'Developed by',
     emptyTitle:'Upload an image', emptySub:'Drop here or click the panel',
     imgFsHint:'Pinch / scroll = zoom · Drag = pan',
     camOrientWarn:'Please rotate your device to portrait', camOrientSub:'Camera mode is only available in portrait view',
@@ -724,7 +728,7 @@ const STRINGS = {
     secAdj:'Einstellungen', secGrain:'Filmkorn', secFrame:'Rahmentyp',
     secCap:'Beschriftung', secAnim:'Animation', secShare:'Teilen',
     dragHint:'Bild hier ablegen', orClick:'oder klicken', formats:'JPG · PNG · WebP · GIF',
-    changeImg:'Ändern', strength:'Stärke', strengthNote:'0% = Original · 100% = voller Filter',
+    changeImg:'Ändern', imgFsOpen:'Bild anzeigen & zoomen', strength:'Stärke', strengthNote:'0% = Original · 100% = voller Filter',
     grain:'Korn', grainFine:'Fein', grainMedium:'Mittel', grainCoarse:'Grob', grainColor:'Farbe',
     captionPh:'Text eingeben…', fontSize:'Größe', fontColor:'Farbe', fontOpacity:'Deckkraft',
     posX:'Horizontal', posY:'Vertikal', clickToPlace:'Auf Bild klicken → platzieren',
@@ -747,6 +751,7 @@ const STRINGS = {
     shareItemDownload:'Bild herunterladen',
     shareItemFb:'In VIPACH-Gruppe teilen',
     footerBy:'Erstellt von', footerRights:'Alle Rechte vorbehalten', footerFree:'Kostenlos',
+    teamName:'Be Smart Kids Club Team', footerByAlt:'Entwickelt von',
     emptyTitle:'Bild hochladen', emptySub:'Hierher ziehen oder Panel klicken',
     imgFsHint:'Pinch / Scrollen = Zoom · Ziehen = Verschieben',
     camOrientWarn:'Bitte drehe dein Gerät ins Hochformat', camOrientSub:'Der Kamera-Modus ist nur im Hochformat verfügbar',
@@ -768,6 +773,8 @@ function switchLang(l){
   const rl=document.getElementById('recLabel'); if(rl) rl.textContent=T('recLabel');
   // Footer (desktop + mobile)
   document.querySelectorAll('.footer-by').forEach(el=>el.textContent=T('footerBy'));
+  document.querySelectorAll('.footer-team').forEach(el=>el.textContent=T('teamName'));
+  document.querySelectorAll('.footer-by-alt').forEach(el=>el.textContent=T('footerByAlt'));
   document.querySelectorAll('.footer-rights').forEach(el=>el.textContent=T('footerRights'));
   document.querySelectorAll('.footer-free').forEach(el=>el.textContent=T('footerFree'));
   // Orientation warning
@@ -2072,38 +2079,11 @@ function buildPanel_Image(container){
     uploadSec.appendChild(uz);
   } else {
     const thumbDiv=document.createElement('div');thumbDiv.className='imginfo vis';
-    const tw=document.createElement('div');tw.className='imgthumb';
-    const img=document.createElement('img');
-    if(_thumbSrc) img.src=_thumbSrc;
-    tw.appendChild(img);
     const meta=document.createElement('div');meta.className='imeta';meta.textContent=_imgMetaStr||'';
     const chg=document.createElement('button');chg.className='btn btn-sec';chg.style.width='100%';
     chg.textContent=T('changeImg');chg.addEventListener('click',()=>document.getElementById('fileinput').click());
-    thumbDiv.appendChild(tw);thumbDiv.appendChild(meta);thumbDiv.appendChild(chg);
+    thumbDiv.appendChild(meta);thumbDiv.appendChild(chg);
     uploadSec.appendChild(thumbDiv);
-
-    // Facebook share button
-    const fbSec=mkSec(T('secShare'),container);
-    const fbBtn=document.createElement('button');
-    fbBtn.className='btn btn-pri';fbBtn.style.cssText='width:100%;justify-content:center;gap:8px;font-size:12px;white-space:normal;text-align:center;line-height:1.4;padding:8px 10px';
-    fbBtn.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>${T('shareToFb')}`;
-    fbBtn.addEventListener('click',()=>{
-      // Download current frame then open Facebook share
-      if(!origImg){toast(T('noImage'));return;}
-      const dl=document.createElement('a');
-      dl.download='vipach-photo.png';
-      dl.href=canvas.toDataURL('image/png');
-      dl.click();
-      setTimeout(()=>{
-        window.open('https://www.facebook.com/groups/vipach','_blank','noopener');
-      },400);
-      toast(T('fbHint'));
-    });
-    fbSec.appendChild(fbBtn);
-    const fbNote=document.createElement('div');
-    fbNote.style.cssText='font-size:9.5px;color:var(--text3);margin-top:7px;line-height:1.55;text-align:center';
-    fbNote.textContent=T('fbNote');
-    fbSec.appendChild(fbNote);
   }
 }
 
@@ -3548,7 +3528,7 @@ const _helpBodyHU = `
 
       <div style="text-align:center;padding:10px 16px 6px;color:var(--text3);font-size:11px;line-height:1.6">
         VIPACH PhotoStudio v7.0 · Készült ❤️-tel<br>
-        <span style="font-weight:600;color:#555">Fejlesztette: Be Smart Kids Club csapata</span><br>
+        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <span class="footer-team">Be Smart Kids Club csapata</span></span><br>
         Kérdés esetén írj ide: <a href="mailto:hello@norbertbanhalmi.com" style="color:var(--accent);text-decoration:none;font-weight:600">hello@norbertbanhalmi.com</a>
       </div>
 
@@ -4292,7 +4272,7 @@ window.addEventListener('resize',()=>{
 
       <div style="text-align:center;padding:10px 16px 6px;color:var(--text3);font-size:11px;line-height:1.6">
         VIPACH PhotoStudio v7.0 · Készült ❤️-tel<br>
-        <span style="font-weight:600;color:#555">Fejlesztette: Be Smart Kids Club csapata</span><br>
+        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <span class="footer-team">Be Smart Kids Club csapata</span></span><br>
         Kérdés esetén írj ide: <a href="mailto:hello@norbertbanhalmi.com" style="color:var(--accent);text-decoration:none;font-weight:600">hello@norbertbanhalmi.com</a>
       </div>
 
