@@ -260,6 +260,12 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .canvas-hint.vis{opacity:1}
 
 
+/* ── Live módban Fotó panel rejtett ── */
+body.cam-active-mode .sidebar-content.tab-image,
+body.cam-active-mode .mobile-panel.tab-image{
+  display:none !important;
+}
+
 /* ── Kamera live módban inaktív tabok ── */
 body.cam-active-mode [data-tab="frame"],
 body.cam-active-mode [data-tab="motion"],
@@ -270,6 +276,33 @@ body.cam-active-mode [data-tab="image"]{
 }
 body.cam-active-mode [data-tab="text"]{
   opacity:.55;
+}
+
+/* ── Kamera tab kiemelése live módban ── */
+body.cam-active-mode [data-tab="camera"],
+body.cam-active-mode .mtab[data-tab="camera"]{
+  color:#C9A84C !important;
+  background:rgba(201,168,76,.15) !important;
+  border-radius:10px;
+  position:relative !important;
+}
+body.cam-active-mode [data-tab="camera"] .stab-ico,
+body.cam-active-mode .mtab[data-tab="camera"] .mtab-ico{
+  opacity:1 !important;
+}
+/* Pulzáló pötty a kamera ikonon */
+body.cam-active-mode [data-tab="camera"]::after,
+body.cam-active-mode .mtab[data-tab="camera"]::after{
+  content:'';
+  position:absolute;
+  top:4px;
+  right:4px;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#C9A84C;
+  animation:blnk 1.4s infinite;
+  z-index:2;
 }
 
 
@@ -363,10 +396,8 @@ body.cam-active-mode [data-tab="text"]{
 #img-fs-zoom-badge{position:absolute;top:16px;left:16px;z-index:2;background:rgba(0,0,0,.55);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;pointer-events:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);letter-spacing:.04em;opacity:0;transition:opacity .2s}
 #img-fs-zoom-badge.vis{opacity:1}
 /* expand button on canvas */
-#img-expand-btn{position:absolute;top:10px;right:10px;z-index:6;width:34px;height:34px;border-radius:8px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.16);color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:background .15s,opacity .2s;-webkit-tap-highlight-color:transparent}
-#img-expand-btn:hover{background:rgba(255,255,255,.18)}
-.cwrap:hover #img-expand-btn,.cwrap:focus-within #img-expand-btn{display:flex}
-#img-expand-btn.always-show{display:flex}
+#img-expand-btn{display:none!important}
+
 
 /* ── MOBILE ≤768px ── */
 #m-footer{display:none}
@@ -375,19 +406,19 @@ body.cam-active-mode [data-tab="text"]{
   body{overflow:hidden;height:100%}
   .app{flex-direction:column;overflow:hidden;flex:1;min-height:0}
   .sidebar{display:none}
-  .carea{order:1;flex:none;height:42vh;min-height:190px;border-bottom:1px solid rgba(255,255,255,.04)}
-  .mobile-tab-bar{display:flex;order:2;background:rgba(8,13,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.05);overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .carea{order:1;flex:none;height:50vh;min-height:220px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .mobile-tab-bar{display:flex;order:3;background:rgba(8,13,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .mobile-tab-bar::-webkit-scrollbar{display:none}
-  .mtab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.8);font-size:8.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 13px;transition:color .15s;border-top:1.5px solid transparent;-webkit-tap-highlight-color:transparent}
+  .mtab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.8);font-size:8.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 13px;transition:color .15s;border-top:1.5px solid transparent;-webkit-tap-highlight-color:transparent;position:relative}
   .mtab .mtab-ico{height:18px;display:flex;align-items:center;justify-content:center;opacity:.85;transition:opacity .15s}
   .mtab.active{color:var(--accent);border-top-color:var(--accent)}
   .mtab.active .mtab-ico{opacity:1}
-  .mobile-panel{order:3;flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:0;padding:8px;-webkit-overflow-scrolling:touch;min-height:0}
+  .mobile-panel{order:2;flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:0;padding:8px;-webkit-overflow-scrolling:touch;min-height:0}
   #m-footer{display:flex;order:4;padding:10px 14px 12px}
   .hdr{padding:0 10px}
   .logo-text-full{display:none}
   .btn .btn-txt{display:none}
-  .toast{bottom:68px}
+  .toast{bottom:130px}
   .canvas-hint{bottom:8px;font-size:10px}
   .lang-btn{font-size:13px;width:26px;height:22px}
   /* Exponáló gomb kisebb mobilon */
@@ -533,7 +564,7 @@ self.addEventListener('fetch',e=>{
       <div class="sidebar-content" id="d-panel"></div>
       <footer class="app-footer">
         <div class="app-footer-name">
-          <span><span class="footer-by">Készítette</span>: <strong>Bánhalmi Norbert</strong></span>
+          <span><span class="footer-by">Készítette</span>: <strong class="footer-team">Be Smart Kids Club csapata</strong></span>
           <span class="footer-counter-inline"><span id="visit-ctr" class="footer-counter-value">········</span></span>
         </div>
         <div class="app-footer-sub">
@@ -549,15 +580,11 @@ self.addEventListener('fetch',e=>{
   <div class="carea" id="carea">
     <div class="empty-state" id="emptystate">
       <div class="empty-ico"><svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".28"><rect x="4" y="12" width="56" height="40" rx="6"/><circle cx="22" cy="28" r="6"/><path d="M4 40l14-10 12 10 10-8 20 12"/></svg></div>
-      <p id="empty-p1" style="font-size:14px;font-weight:600">Tölts fel egy képet</p>
-      <p id="empty-p2" style="font-size:11px;margin-top:4px;color:var(--text3)">Húzd ide, vagy kattints a panelre</p>
     </div>
     <div class="cwrap" id="cwrap" style="display:none">
       <canvas id="preview"></canvas>
       <div class="recindicator" id="recindicator"><div class="recdot"></div> <span id="recLbl">FELVÉTEL</span></div>
-      <button id="img-expand-btn" title="Teljes képernyő" onclick="imgFsOpen()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,5 1,1 5,1"/><polyline points="11,1 15,1 15,5"/><polyline points="15,11 15,15 11,15"/><polyline points="5,15 1,15 1,11"/></svg>
-      </button>
+
     </div>
     <div class="canvas-hint" id="canvas-hint"></div>
     <div id="cam-overlay">
@@ -604,7 +631,7 @@ self.addEventListener('fetch',e=>{
 <div class="mobile-panel" id="m-panel"></div>
 <footer class="app-footer" id="m-footer" style="background:var(--surf);border-top:1px solid rgba(255,255,255,.05)">
   <div class="app-footer-name">
-    <span><span class="footer-by">Készítette</span>: <strong>Bánhalmi Norbert</strong></span>
+    <span><span class="footer-by">Készítette</span>: <strong class="footer-team">Be Smart Kids Club csapata</strong></span>
     <span class="footer-counter-inline"><span id="visit-ctr-m" class="footer-counter-value">········</span></span>
   </div>
   <div class="app-footer-sub">
@@ -630,8 +657,8 @@ const STRINGS = {
     secAdj:'Beállítások', secGrain:'Filmszem & Zaj', secFrame:'Keret típusa',
     secCap:'Felirat', secAnim:'Animáció', secShare:'Megosztás',
     dragHint:'Húzd ide a képet', orClick:'vagy kattints', formats:'JPG · PNG · WebP · GIF',
-    changeImg:'Csere', strength:'Erősség', strengthNote:'0% = eredeti · 100% = teljes szűrő',
-    grain:'Szemcse', scratch:'Karcolás', grainFine:'Finom', grainMedium:'Közepes', grainCoarse:'Durva', grainColor:'Színes',
+    changeImg:'Csere', imgFsOpen:'Kép megtekintése & zoom', strength:'Erősség', strengthNote:'0% = eredeti · 100% = teljes szűrő',
+    grain:'Szemcse', grainFine:'Finom', grainMedium:'Közepes', grainCoarse:'Durva', grainColor:'Színes',
     captionPh:'Írj felirat szöveget…', fontSize:'Méret', fontColor:'Szín', fontOpacity:'Átlátszóság',
     posX:'Vízszintes', posY:'Függőleges', clickToPlace:'Kattints a képre → elhelyezés',
     shadow:'Árnyék', bgBar:'Háttérsáv', speed:'Sebesség', reset:'↺ Visszaállítás',
@@ -654,6 +681,7 @@ const STRINGS = {
     shareItemDownload:'Kép letöltése',
     shareItemFb:'Megosztás a VIPACH csoportban',
     footerBy:'Készítette', footerRights:'Minden jog fenntartva', footerFree:'Díjmentes',
+    teamName:'Be Smart Kids Club csapata', footerByAlt:'Fejlesztette',
     emptyTitle:'Tölts fel egy képet', emptySub:'Húzd ide, vagy kattints a panelre',
     imgFsHint:'Csippentés / görgetés = zoom · Húzás = mozgatás',
     camOrientWarn:'Forgasd vissza az eszközt álló helyzetbe', camOrientSub:'A kamera mód csak portré nézetben elérhető',
@@ -665,8 +693,8 @@ const STRINGS = {
     secAdj:'Adjustments', secGrain:'Film grain', secFrame:'Frame type',
     secCap:'Caption', secAnim:'Animation', secShare:'Share',
     dragHint:'Drop your image here', orClick:'or click', formats:'JPG · PNG · WebP · GIF',
-    changeImg:'Change', strength:'Strength', strengthNote:'0% = original · 100% = full filter',
-    grain:'Grain', scratch:'Scratch', grainFine:'Fine', grainMedium:'Medium', grainCoarse:'Coarse', grainColor:'Color',
+    changeImg:'Change', imgFsOpen:'View image & zoom', strength:'Strength', strengthNote:'0% = original · 100% = full filter',
+    grain:'Grain', grainFine:'Fine', grainMedium:'Medium', grainCoarse:'Coarse', grainColor:'Color',
     captionPh:'Type caption text…', fontSize:'Size', fontColor:'Color', fontOpacity:'Opacity',
     posX:'Horizontal', posY:'Vertical', clickToPlace:'Click image → place',
     shadow:'Shadow', bgBar:'Background bar', speed:'Speed', reset:'↺ Reset',
@@ -688,6 +716,7 @@ const STRINGS = {
     shareItemDownload:'Download image',
     shareItemFb:'Share in VIPACH group',
     footerBy:'Created by', footerRights:'All rights reserved', footerFree:'Free to use',
+    teamName:'Be Smart Kids Club team', footerByAlt:'Developed by',
     emptyTitle:'Upload an image', emptySub:'Drop here or click the panel',
     imgFsHint:'Pinch / scroll = zoom · Drag = pan',
     camOrientWarn:'Please rotate your device to portrait', camOrientSub:'Camera mode is only available in portrait view',
@@ -699,8 +728,8 @@ const STRINGS = {
     secAdj:'Einstellungen', secGrain:'Filmkorn', secFrame:'Rahmentyp',
     secCap:'Beschriftung', secAnim:'Animation', secShare:'Teilen',
     dragHint:'Bild hier ablegen', orClick:'oder klicken', formats:'JPG · PNG · WebP · GIF',
-    changeImg:'Ändern', strength:'Stärke', strengthNote:'0% = Original · 100% = voller Filter',
-    grain:'Korn', scratch:'Kratzer', grainFine:'Fein', grainMedium:'Mittel', grainCoarse:'Grob', grainColor:'Farbe',
+    changeImg:'Ändern', imgFsOpen:'Bild anzeigen & zoomen', strength:'Stärke', strengthNote:'0% = Original · 100% = voller Filter',
+    grain:'Korn', grainFine:'Fein', grainMedium:'Mittel', grainCoarse:'Grob', grainColor:'Farbe',
     captionPh:'Text eingeben…', fontSize:'Größe', fontColor:'Farbe', fontOpacity:'Deckkraft',
     posX:'Horizontal', posY:'Vertikal', clickToPlace:'Auf Bild klicken → platzieren',
     shadow:'Schatten', bgBar:'Hintergrundleiste', speed:'Geschwindigkeit', reset:'↺ Zurücksetzen',
@@ -722,6 +751,7 @@ const STRINGS = {
     shareItemDownload:'Bild herunterladen',
     shareItemFb:'In VIPACH-Gruppe teilen',
     footerBy:'Erstellt von', footerRights:'Alle Rechte vorbehalten', footerFree:'Kostenlos',
+    teamName:'Be Smart Kids Club Team', footerByAlt:'Entwickelt von',
     emptyTitle:'Bild hochladen', emptySub:'Hierher ziehen oder Panel klicken',
     imgFsHint:'Pinch / Scrollen = Zoom · Ziehen = Verschieben',
     camOrientWarn:'Bitte drehe dein Gerät ins Hochformat', camOrientSub:'Der Kamera-Modus ist nur im Hochformat verfügbar',
@@ -743,6 +773,8 @@ function switchLang(l){
   const rl=document.getElementById('recLabel'); if(rl) rl.textContent=T('recLabel');
   // Footer (desktop + mobile)
   document.querySelectorAll('.footer-by').forEach(el=>el.textContent=T('footerBy'));
+  document.querySelectorAll('.footer-team').forEach(el=>el.textContent=T('teamName'));
+  document.querySelectorAll('.footer-by-alt').forEach(el=>el.textContent=T('footerByAlt'));
   document.querySelectorAll('.footer-rights').forEach(el=>el.textContent=T('footerRights'));
   document.querySelectorAll('.footer-free').forEach(el=>el.textContent=T('footerFree'));
   // Orientation warning
@@ -878,10 +910,10 @@ const FONTS=[
   {id:'rocksalt',    lbl:'Rock Salt',    css:'"Rock Salt", cursive'},
 ];
 const AR_BTNS=[
-  {ar:'original',label:'Free',w:22,h:18},{ar:'1:1',label:'1:1',w:18,h:18},
-  {ar:'16:9',label:'16:9',w:22,h:13},{ar:'9:16',label:'9:16',w:13,h:22},
-  {ar:'4:3',label:'4:3',w:20,h:16},{ar:'3:4',label:'3:4',w:16,h:20},
-  {ar:'2:3',label:'2:3',w:14,h:20},{ar:'3:2',label:'3:2',w:20,h:14},
+  {ar:'original',label:'Free',w:22,h:17},{ar:'1:1',label:'1:1',w:18,h:18},
+  {ar:'16:9',label:'16:9',w:22,h:12},{ar:'9:16',label:'9:16',w:12,h:22},
+  {ar:'4:3',label:'4:3',w:22,h:17},{ar:'3:4',label:'3:4',w:17,h:22},
+  {ar:'2:3',label:'2:3',w:15,h:22},{ar:'3:2',label:'3:2',w:22,h:15},
 ];
 const TABS=[
   {id:'camera', icoKey:'tabCamera',  ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="5" width="16" height="11" rx="2"/><circle cx="9" cy="10.5" r="3"/><path d="M5.5 5V4h4v1"/><circle cx="14.5" cy="7" r="1" fill="currentColor" stroke="none"/></svg>', action:'camera'},
@@ -914,7 +946,7 @@ let pointerDownPos={x:0,y:0};
 let pinchDist0=0, pinchZoom0=1;
 let activeTab='image';
 const adj={brightness:100,contrast:100,saturation:100,hue:0,blur:0,fade:0,grayscale:0,sepia:0,vignette:0};
-const grain={amount:0,type:'fine',scratch:0};
+const grain={amount:0,type:'fine'};
 const cap={text:'',font:'sans',size:36,color:'#ffffff',opacity:100,x:50,y:85,shadow:true,bgBar:false};
 
 // ══════════════════════════════════════════
@@ -1678,7 +1710,7 @@ function applyLumGrain(c,w,h,baseAmount){
 }
 
 function applyGrain(c,w,h){
-  if(grain.amount<=0&&grain.scratch<=0) return;
+  if(grain.amount<=0&&0<=0) return;
   const id=c.getImageData(0,0,w,h);const d=id.data;
   const intensity=grain.amount/100*90;
   if(grain.amount>0){
@@ -1699,8 +1731,8 @@ function applyGrain(c,w,h){
       }}
     }}
   }
-  if(grain.scratch>0){
-    const num=Math.floor(grain.scratch/100*30);
+  if(0>0){
+    const num=Math.floor(0/100*30);
     for(let n=0;n<num;n++){
       const x=Math.floor(Math.random()*w),len=Math.floor(Math.random()*h*.3+h*.1);
       const yS=Math.floor(Math.random()*(h-len));const dark=Math.random()>.5;
@@ -1888,7 +1920,7 @@ function drawFrame(ts){
     ctx.globalAlpha=1;
   }
 
-  if(grain.amount>0||grain.scratch>0) applyGrain(ctx,w,h);
+  if(grain.amount>0) applyGrain(ctx,w,h);
   if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(ctx,w,h,bwp.grain*42);}
   drawCaption(ctx,w,h);
 }
@@ -2047,38 +2079,11 @@ function buildPanel_Image(container){
     uploadSec.appendChild(uz);
   } else {
     const thumbDiv=document.createElement('div');thumbDiv.className='imginfo vis';
-    const tw=document.createElement('div');tw.className='imgthumb';
-    const img=document.createElement('img');
-    if(_thumbSrc) img.src=_thumbSrc;
-    tw.appendChild(img);
     const meta=document.createElement('div');meta.className='imeta';meta.textContent=_imgMetaStr||'';
     const chg=document.createElement('button');chg.className='btn btn-sec';chg.style.width='100%';
     chg.textContent=T('changeImg');chg.addEventListener('click',()=>document.getElementById('fileinput').click());
-    thumbDiv.appendChild(tw);thumbDiv.appendChild(meta);thumbDiv.appendChild(chg);
+    thumbDiv.appendChild(meta);thumbDiv.appendChild(chg);
     uploadSec.appendChild(thumbDiv);
-
-    // Facebook share button
-    const fbSec=mkSec(T('secShare'),container);
-    const fbBtn=document.createElement('button');
-    fbBtn.className='btn btn-pri';fbBtn.style.cssText='width:100%;justify-content:center;gap:8px;font-size:12px;white-space:normal;text-align:center;line-height:1.4;padding:8px 10px';
-    fbBtn.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>${T('shareToFb')}`;
-    fbBtn.addEventListener('click',()=>{
-      // Download current frame then open Facebook share
-      if(!origImg){toast(T('noImage'));return;}
-      const dl=document.createElement('a');
-      dl.download='vipach-photo.png';
-      dl.href=canvas.toDataURL('image/png');
-      dl.click();
-      setTimeout(()=>{
-        window.open('https://www.facebook.com/groups/vipach','_blank','noopener');
-      },400);
-      toast(T('fbHint'));
-    });
-    fbSec.appendChild(fbBtn);
-    const fbNote=document.createElement('div');
-    fbNote.style.cssText='font-size:9.5px;color:var(--text3);margin-top:7px;line-height:1.55;text-align:center';
-    fbNote.textContent=T('fbNote');
-    fbSec.appendChild(fbNote);
   }
 }
 
@@ -2161,12 +2166,6 @@ function buildPanel_Adjust(container){
   });
   grainSec.appendChild(chips);
 
-  const scRow=document.createElement('div');scRow.className='srow';
-  const scv=document.createElement('span');scv.className='sval';scv.textContent=grain.scratch+'%';
-  scRow.innerHTML=`<span class="slbl">${T('scratch')}</span>`;
-  const sci=document.createElement('input');sci.type='range';sci.className='sinput';sci.min=0;sci.max=100;sci.value=grain.scratch;
-  sci.addEventListener('input',e=>{grain.scratch=parseInt(e.target.value);scv.textContent=grain.scratch+'%';frameOrCam();});
-  scRow.appendChild(sci);scRow.appendChild(scv);grainSec.appendChild(scRow);
 }
 
 function buildPanel_Frame(container){
@@ -2413,8 +2412,9 @@ function switchTab(id){
   });
   const dp=document.getElementById('d-panel');
   const mp=document.getElementById('m-panel');
-  if(dp) buildPanel(id,dp);
-  if(mp) buildPanel(id,mp);
+  // Tab-image class: live módban elrejti a Fotó panelt
+  if(dp){ dp.classList.toggle('tab-image', id==='image'); buildPanel(id,dp); }
+  if(mp){ mp.classList.toggle('tab-image', id==='image'); buildPanel(id,mp); }
 }
 
 function buildTabBars(){
@@ -2535,7 +2535,7 @@ function downloadHD(){
       imgCanvas=bl;
     }
     oc.drawImage(imgCanvas,bS,bS,iW,iH);
-    if(grain.amount>0||grain.scratch>0) applyGrain(oc,outW,outH);
+    if(grain.amount>0) applyGrain(oc,outW,outH);
         if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,outW,outH,bwp.grain*42);}
     drawCaption(oc,outW,outH);
     off.toBlob(async blob=>{await dlBlob(blob,'VIPACH_polaroid_'+Date.now()+'.jpg');toast(T('downloadDone')+` (${outW}×${outH}px)`);});
@@ -2552,7 +2552,7 @@ function downloadHD(){
   const oc=off.getContext('2d');
   if(filterStrength<100){oc.drawImage(origImg,sx,sy,sw,sh,0,0,outW,outH);oc.globalAlpha=filterStrength/100;oc.drawImage(filtCanvas,0,0);oc.globalAlpha=1;}
   else{oc.drawImage(filtCanvas,0,0);}
-  if(grain.amount>0||grain.scratch>0) applyGrain(oc,outW,outH);
+  if(grain.amount>0) applyGrain(oc,outW,outH);
     if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,outW,outH,bwp.grain*42);}
   drawCaption(oc,outW,outH);
   off.toBlob(async blob=>{await dlBlob(blob,'VIPACH_'+Date.now()+'.jpg');toast(T('downloadDone')+` (${outW}×${outH}px)`);});
@@ -2859,6 +2859,9 @@ function camFullscreen(){
 function camExitFullscreen(){
   camFsActive=false;
   document.getElementById('cam-fs-wrap').classList.remove('active');
+  // FS slider reset — ne ragadjon be
+  const _fssl=document.getElementById('cam-fs-portrait-slider');
+  if(_fssl) _fssl.style.display='none';
   // Restore icon
   const ico=document.getElementById('cam-fs-ico');
   if(ico) ico.innerHTML='<polyline points="1,6 1,1 6,1"/><polyline points="12,1 17,1 17,6"/><polyline points="17,12 17,17 12,17"/><polyline points="6,17 1,17 1,12"/>';
@@ -2946,11 +2949,14 @@ async function togglePortraitMode(){
   const fsBtn = document.getElementById('cam-fs-portrait-btn');
   if(fsBtn) fsBtn.style.background = portraitMode ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.22)';
   // FS blur csúszka — portré mód szerint mutatjuk/rejtjük
-  const fsSl = document.getElementById('cam-fs-portrait-slider');
-  if(fsSl){
-    fsSl.style.display = portraitMode ? 'flex' : 'none';
-    const fsi = fsSl.querySelector('input');
-    if(fsi) fsi.value = _bgBlurAmount;
+  // FS slider: csak ha fullscreen aktív, akkor szinkronizálunk
+  if(camFsActive){
+    const fsSl = document.getElementById('cam-fs-portrait-slider');
+    if(fsSl){
+      fsSl.style.display = portraitMode ? 'flex' : 'none';
+      const fsi = fsSl.querySelector('input');
+      if(fsi) fsi.value = _bgBlurAmount;
+    }
   }
   const slider = document.getElementById('cam-portrait-slider');
   if(slider){
@@ -3099,7 +3105,7 @@ function camLoop(ts){
   oc.drawImage(camVideo,0,0,sw,sh);
   // Apply filters at display resolution
   applyFiltersToDrawnCtx(oc,sw,sh);
-  if(grain.amount>0||grain.scratch>0) applyGrain(oc,sw,sh);
+  if(grain.amount>0) applyGrain(oc,sw,sh);
   if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,sw,sh,bwp.grain*42);}
   // Portré mód — háttér elmosás (async, nem blokkolja a loop-ot)
   if(portraitMode&&_segReady){
@@ -3154,7 +3160,7 @@ async function camCapture(){
     const iCtx=iOff.getContext('2d');
     iCtx.drawImage(camVideo,0,0,vw,vh);
     applyFiltersToDrawnCtx(iCtx,vw,vh);
-    if(grain.amount>0||grain.scratch>0) applyGrain(iCtx,vw,vh);
+    if(grain.amount>0) applyGrain(iCtx,vw,vh);
     if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(iCtx,vw,vh,bwp.grain*42);}
     pc.drawImage(iOff,bS,bT,vw,vh);
     pc.strokeStyle='rgba(0,0,0,.06)';pc.lineWidth=1;pc.strokeRect(bS,bT,vw,vh);
@@ -3164,7 +3170,7 @@ async function camCapture(){
     const oc=finalCanvas.getContext('2d');
     oc.drawImage(camVideo,0,0,vw,vh);
     applyFiltersToDrawnCtx(oc,vw,vh);
-    if(grain.amount>0||grain.scratch>0) applyGrain(oc,vw,vh);
+    if(grain.amount>0) applyGrain(oc,vw,vh);
     if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,vw,vh,bwp.grain*42);}
     if(cap.text.trim()) drawCaption(oc,vw,vh);
   }
@@ -3193,6 +3199,13 @@ const _helpBodyHU = `
           <div class="help-step-txt">
             <strong>1. lépés — Kamera vagy feltöltés! 🤳</strong>
             <span>A <b>Kamera</b> fül az első — azonnal látod magad mindenféle szűrőkkel! Nyomd meg a nagy fehér kört egy fotóhoz. A <b>Hozzáadás (+)</b> fülön pedig feltölthetsz bármilyen képet: JPG, PNG, GIF — akármi megy! 🐱</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">🟡</div>
+          <div class="help-step-txt">
+            <strong>Az arany kamera ikon jelzi: live mód be van kapcsolva! ✨</strong>
+            <span>Amikor a kamera fut, a <b>KAMERA</b> fül <b>arany színre</b> vált és egy kis <b>arany pötty</b> pulzál rajta. Ez jelzi, hogy a többi menü (Fotó, Keret, Mozgás) most szürkén, nem kattinthatóan jelenik meg — mert a kamera él. Ha szerkeszteni szeretnéd a képet, először <b>kattints a kamera ikonra hogy kikapcsold</b>, vagy nyomd meg a kamera nézetben az <b>✕ gombot</b>! 📸</span>
           </div>
         </div>
         <div class="help-step">
@@ -3258,7 +3271,7 @@ const _helpBodyHU = `
           <div class="help-step-ico">🎞️</div>
           <div class="help-step-txt">
             <strong>Filmszem = régi mozifilm hatás! 🎦</strong>
-            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! A <b>Karcolás</b> meg piszkos karcolásokat tesz rá — mintha 100 éves lenne a fotó! 😎</span>
+            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! Finomtól a durvás szemcséig mindent beállíthatsz! 🎞️</span>
           </div>
         </div>
         <div class="help-step">
@@ -3432,7 +3445,7 @@ const _helpBodyHU = `
           <div class="help-idea">
             <div class="help-idea-ico">👻</div>
             <p>Szellemfotó</p>
-            <small>B&amp;W + filmszem 90% + Flicker animáció + karcolás</small>
+            <small>B&amp;W + filmszem 90% + Flicker animáció</small>
           </div>
           <div class="help-idea">
             <div class="help-idea-ico">🤖</div>
@@ -3516,7 +3529,7 @@ const _helpBodyHU = `
 
       <div style="text-align:center;padding:10px 16px 6px;color:var(--text3);font-size:11px;line-height:1.6">
         VIPACH PhotoStudio v7.0 · Készült ❤️-tel<br>
-        <span style="font-weight:600;color:#555">Fejlesztette: Bánhalmi Norbert</span><br>
+        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <span class="footer-team">Be Smart Kids Club csapata</span></span><br>
         Kérdés esetén írj ide: <a href="mailto:hello@norbertbanhalmi.com" style="color:var(--accent);text-decoration:none;font-weight:600">hello@norbertbanhalmi.com</a>
       </div>
 
@@ -3538,6 +3551,10 @@ const HELP_CONTENT = {
       <div class="help-step"><div class="help-step-ico">📷</div><div class="help-step-txt">
         <strong>Step 1 — Camera or upload! 🤳</strong>
         <span>The <b>Camera</b> tab is first — see yourself live with filters! Press the big white circle to take a photo. On the <b>Photo (+)</b> tab you can upload any image: JPG, PNG, GIF — anything goes! 🐱</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">🟡</div><div class="help-step-txt">
+        <strong>The golden camera icon means: live mode is on! ✨</strong>
+        <span>When the camera is running, the <b>CAMERA</b> tab turns <b>gold</b> and a small <b>gold dot</b> pulses on it. This means the other tabs (Photo, Frame, Motion) appear grayed out and unclickable — because the camera is live. To edit your photo, first <b>tap the camera icon to turn it off</b>, or press the <b>✕ button</b> in the camera view! 📸</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">🖼️</div><div class="help-step-txt">
         <strong>Step 2 — Aspect ratio in the Frame tab! 📐</strong>
@@ -3573,7 +3590,7 @@ const HELP_CONTENT = {
       </div></div>
       <div class="help-step"><div class="help-step-ico">🎞️</div><div class="help-step-txt">
         <strong>Film grain = old cinema effect! 🎦</strong>
-        <span>The <b>Grain</b> slider adds tiny particles to your photo — just like old movie film! <b>Scratch</b> adds dirty scratches, as if the photo is 100 years old! 😎</span>
+        <span>The <b>Grain</b> slider adds tiny particles to your photo — just like old movie film! From fine to coarse grain, everything is adjustable! 🎞️</span>
       </div></div>
     </div>
 
@@ -3693,6 +3710,10 @@ const HELP_CONTENT = {
         <strong>Schritt 1 — Kamera oder Upload! 🤳</strong>
         <span>Der <b>Kamera</b>-Tab ist der erste — sieh dich live mit Filtern! Drücke den großen weißen Kreis für ein Foto. Im <b>Foto (+)</b>-Tab kannst du beliebige Bilder hochladen: JPG, PNG, GIF — alles geht! 🐱</span>
       </div></div>
+      <div class="help-step"><div class="help-step-ico">🟡</div><div class="help-step-txt">
+        <strong>Das goldene Kamera-Symbol zeigt: Live-Modus ist an! ✨</strong>
+        <span>Wenn die Kamera läuft, wird der <b>KAMERA</b>-Tab <b>golden</b> und ein kleiner <b>goldener Punkt</b> blinkt darauf. Das bedeutet, dass die anderen Tabs (Foto, Rahmen, Bewegung) ausgegraut und nicht klickbar erscheinen — weil die Kamera live ist. Um dein Foto zu bearbeiten, tippe zuerst auf das <b>Kamera-Symbol zum Ausschalten</b> oder drücke den <b>✕-Button</b> in der Kameraansicht! 📸</span>
+      </div></div>
       <div class="help-step"><div class="help-step-ico">🖼️</div><div class="help-step-txt">
         <strong>Schritt 2 — Seitenverhältnis im Rahmen-Tab! 📐</strong>
         <span>Im <b>Rahmen</b>-Tab kannst du <b>Seitenverhältnis</b> (z.B. 1:1, 16:9, 9:16) und <b>Zoom</b> einstellen! Das ist wichtig vor dem Bearbeiten.</span>
@@ -3727,7 +3748,7 @@ const HELP_CONTENT = {
       </div></div>
       <div class="help-step"><div class="help-step-ico">🎞️</div><div class="help-step-txt">
         <strong>Filmkorn = alter Kinofilm-Effekt! 🎦</strong>
-        <span>Der <b>Korn</b>-Regler fügt kleine Partikel hinzu — genau wie alter Kinofilm! <b>Kratzer</b> fügt schmutzige Kratzer hinzu, als wäre das Foto 100 Jahre alt! 😎</span>
+        <span>Der <b>Korn</b>-Regler fügt kleine Partikel hinzu — genau wie alter Kinofilm! Von feinem bis grobem Korn ist alles einstellbar! 🎞️</span>
       </div></div>
     </div>
 
@@ -3925,6 +3946,13 @@ window.addEventListener('resize',()=>{
           </div>
         </div>
         <div class="help-step">
+          <div class="help-step-ico">🟡</div>
+          <div class="help-step-txt">
+            <strong>Az arany kamera ikon jelzi: live mód be van kapcsolva! ✨</strong>
+            <span>Amikor a kamera fut, a <b>KAMERA</b> fül <b>arany színre</b> vált és egy kis <b>arany pötty</b> pulzál rajta. Ez jelzi, hogy a többi menü (Fotó, Keret, Mozgás) most szürkén, nem kattinthatóan jelenik meg — mert a kamera él. Ha szerkeszteni szeretnéd a képet, először <b>kattints a kamera ikonra hogy kikapcsold</b>, vagy nyomd meg a kamera nézetben az <b>✕ gombot</b>! 📸</span>
+          </div>
+        </div>
+        <div class="help-step">
           <div class="help-step-ico">🖼️</div>
           <div class="help-step-txt">
             <strong>2. lépés — Képarány a Keret fülön! 📐</strong>
@@ -3987,7 +4015,7 @@ window.addEventListener('resize',()=>{
           <div class="help-step-ico">🎞️</div>
           <div class="help-step-txt">
             <strong>Filmszem = régi mozifilm hatás! 🎦</strong>
-            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! A <b>Karcolás</b> meg piszkos karcolásokat tesz rá — mintha 100 éves lenne a fotó! 😎</span>
+            <span>A <b>Filmszem</b> csúszkával apró szemcsék jelennek meg a képen — pont úgy néz ki, mint a régi filmes mozik! Finomtól a durvás szemcséig mindent beállíthatsz! 🎞️</span>
           </div>
         </div>
         <div class="help-step">
@@ -4161,7 +4189,7 @@ window.addEventListener('resize',()=>{
           <div class="help-idea">
             <div class="help-idea-ico">👻</div>
             <p>Szellemfotó</p>
-            <small>B&amp;W + filmszem 90% + Flicker animáció + karcolás</small>
+            <small>B&amp;W + filmszem 90% + Flicker animáció</small>
           </div>
           <div class="help-idea">
             <div class="help-idea-ico">🤖</div>
@@ -4245,7 +4273,7 @@ window.addEventListener('resize',()=>{
 
       <div style="text-align:center;padding:10px 16px 6px;color:var(--text3);font-size:11px;line-height:1.6">
         VIPACH PhotoStudio v7.0 · Készült ❤️-tel<br>
-        <span style="font-weight:600;color:#555">Fejlesztette: Bánhalmi Norbert</span><br>
+        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <span class="footer-team">Be Smart Kids Club csapata</span></span><br>
         Kérdés esetén írj ide: <a href="mailto:hello@norbertbanhalmi.com" style="color:var(--accent);text-decoration:none;font-weight:600">hello@norbertbanhalmi.com</a>
       </div>
 
