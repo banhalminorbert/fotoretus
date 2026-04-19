@@ -439,6 +439,8 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   .app{flex-direction:column;overflow:hidden;flex:1;min-height:0}
   .sidebar{display:none}
   .carea{order:1;flex:none;height:50vh;min-height:220px;border-bottom:1px solid rgba(255,255,255,.04)}
+  /* Kamera aktív módban: 4:3 arány a carea-nak */
+  body.cam-active-mode .carea{height:calc(100vw * 3 / 4);min-height:240px;max-height:70vh}
   .mobile-tab-bar{display:flex;order:3;background:rgba(8,13,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .mobile-tab-bar::-webkit-scrollbar{display:none}
   .mtab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.8);font-size:8.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 13px;transition:color .15s;border-top:1.5px solid transparent;-webkit-tap-highlight-color:transparent;position:relative}
@@ -458,7 +460,7 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   .cam-controls{gap:12px!important;padding:9px 16px!important}
   .cam-icon-btn{width:36px!important;height:36px!important}
   /* Cam-overlay ne lógjon bele a tab barba */
-  #cam-overlay{padding-bottom:70px!important}
+  #cam-overlay{padding-bottom:22px!important}
 }
 @media(min-width:769px){
   .logo-text-short{display:none}
@@ -1196,8 +1198,17 @@ function canvasSize(){
   const ca=document.getElementById('carea');
   const maxW=ca.clientWidth, maxH=ca.clientHeight;
   if(!origImg){
-    // Live módban: carea teljes területét töltjük ki
-    return{w:Math.round(maxW),h:Math.round(maxH)};
+    // Live módban: fix 4:3 arány (legtöbb kamera natív aránya)
+    const camAR = 4/3;
+    let w, h;
+    if(maxW/maxH >= camAR){
+      // Magasság a szűk oldal
+      h = maxH; w = Math.round(h * camAR);
+    } else {
+      // Szélesség a szűk oldal
+      w = maxW; h = Math.round(w / camAR);
+    }
+    return{w, h};
   }
   const imgAR=origImg.width/origImg.height;
   const maxW2=ca.clientWidth*0.92, maxH2=ca.clientHeight*0.92;
