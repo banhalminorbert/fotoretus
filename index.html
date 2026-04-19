@@ -3093,32 +3093,35 @@ function camLoop(ts){
   const{w,h}=canvasSize();
   if(canvas.width!==w)canvas.width=w;
   if(canvas.height!==h)canvas.height=h;
-  // Scale video to display resolution
-  const scale=Math.min(w/vw,h/vh);
+  // Scale video to fill canvas (cover mode — fekete sáv nélkül)
+  const scale=Math.max(w/vw,h/vh);
   const sw=Math.round(vw*scale),sh=Math.round(vh*scale);
-  // Reuse preview canvas
-  if(!_camPrvCanvas||_camPrvCanvas.width!==sw||_camPrvCanvas.height!==sh){
+  // Reuse preview canvas — canvas mérete = display canvas mérete (cover)
+  if(!_camPrvCanvas||_camPrvCanvas.width!==w||_camPrvCanvas.height!==h){
     _camPrvCanvas=document.createElement('canvas');
-    _camPrvCanvas.width=sw;_camPrvCanvas.height=sh;
+    _camPrvCanvas.width=w;_camPrvCanvas.height=h;
   }
   const oc=_camPrvCanvas.getContext('2d');
-  oc.drawImage(camVideo,0,0,sw,sh);
-  // Apply filters at display resolution
-  applyFiltersToDrawnCtx(oc,sw,sh);
-  if(grain.amount>0) applyGrain(oc,sw,sh);
-  if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,sw,sh,bwp.grain*42);}
+  // Cover: video középre igazítva, szélei levágva
+  const ox=Math.round((w-sw)/2);
+  const oy=Math.round((h-sh)/2);
+  oc.drawImage(camVideo,0,0,vw,vh,ox,oy,sw,sh);
+  // Apply filters at display resolution (cover canvas: w×h)
+  applyFiltersToDrawnCtx(oc,w,h);
+  if(grain.amount>0) applyGrain(oc,w,h);
+  if(currentBWMode){const bwp=BW_PRESETS.find(p=>p.id===currentBWMode);if(bwp&&bwp.grain>0)applyLumGrain(oc,w,h,bwp.grain*42);}
   // Portré mód — háttér elmosás (async, nem blokkolja a loop-ot)
   if(portraitMode&&_segReady){
-    applyPortraitBlur(oc,sw,sh); // fire-and-forget, következő frame-re hat
+    applyPortraitBlur(oc,w,h); // fire-and-forget, következő frame-re hat
   }
-  // Blit to main canvas (centered)
+  // Blit to main canvas (cover — már pontosan w×h méretű)
   ctx.clearRect(0,0,w,h);
-  ctx.drawImage(_camPrvCanvas,Math.round((w-sw)/2),Math.round((h-sh)/2));
+  ctx.drawImage(_camPrvCanvas,0,0);
   if(cap.text.trim()) drawCaption(ctx,w,h);
   // Mirror to fullscreen canvas if active
   if(camFsActive&&_camFsCanvas&&_camFsCtx){
-    if(_camFsCanvas.width!==sw||_camFsCanvas.height!==sh){_camFsCanvas.width=sw;_camFsCanvas.height=sh;}
-    _camFsCtx.drawImage(_camPrvCanvas,0,0,sw,sh);
+    if(_camFsCanvas.width!==w||_camFsCanvas.height!==h){_camFsCanvas.width=w;_camFsCanvas.height=h;}
+    _camFsCtx.drawImage(_camPrvCanvas,0,0);
   }
 }
 
