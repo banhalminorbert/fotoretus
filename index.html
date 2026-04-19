@@ -302,6 +302,11 @@ body{display:flex;flex-direction:column;overflow:hidden}
 
 /* ── CANVAS ── */
 .cwrap{position:relative;display:flex;align-items:center;justify-content:center}
+/* Mobil szerkesztő: kép teljesen látszódjon */
+@media(max-width:768px){
+  body:not(.cam-active-mode) .cwrap{width:100%;padding:8px 0}
+  body:not(.cam-active-mode) #preview{max-width:100%;height:auto;max-height:none}
+}
 #preview{display:block;border-radius:6px;box-shadow:0 16px 64px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.04);touch-action:none;user-select:none;-webkit-user-select:none;cursor:default}
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--text3);text-align:center;padding:20px}
 .empty-ico{display:flex;align-items:center;justify-content:center;margin-bottom:4px}
@@ -466,9 +471,11 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   body{overflow:hidden;height:100%}
   .app{flex-direction:column;overflow:hidden;flex:1;min-height:0}
   .sidebar{display:none}
-  .carea{order:1;flex:none;height:50vh;min-height:220px;border-bottom:1px solid rgba(255,255,255,.04)}
-  /* Kamera aktív módban: 4:3 arány a carea-nak */
-  body.cam-active-mode .carea{height:calc(100vw * 3 / 4);min-height:240px;max-height:70vh}
+  .carea{order:1;flex:none;height:50vh;min-height:220px;max-height:75vh;border-bottom:1px solid rgba(255,255,255,.04)}
+  /* Kamera aktív módban: 4:3 arány */
+  body.cam-active-mode .carea{height:100%;flex:1;min-height:0;max-height:none}
+  /* Szerkesztő módban: a kép határozza meg a magasságot */
+  body:not(.cam-active-mode) .carea{height:auto;min-height:180px;max-height:75vh;overflow:visible}
   .mobile-tab-bar{display:flex;order:3;background:rgba(8,13,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .mobile-tab-bar::-webkit-scrollbar{display:none}
   .mtab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.8);font-size:8.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 13px;transition:color .15s;border-top:1.5px solid transparent;-webkit-tap-highlight-color:transparent;position:relative}
@@ -488,7 +495,46 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   .cam-controls{gap:12px!important;padding:9px 16px!important}
   .cam-icon-btn{width:36px!important;height:36px!important}
   /* Cam-overlay ne lógjon bele a tab barba */
-  #cam-overlay{padding-bottom:22px!important}
+  #cam-overlay{
+    padding-bottom:0!important;
+    justify-content:space-between!important;
+    padding:0!important;
+  }
+  /* Felső sáv: badge + portré gomb */
+  #cam-overlay #cam-badge{
+    position:relative;
+    top:auto;left:auto;
+    transform:none;
+    margin:12px auto 0;
+    align-self:center;
+  }
+  /* Felső sáv: LIVE badge + PORTRÉ gomb */
+  .cam-top-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    padding:12px 14px 8px;
+    flex-shrink:0;
+    background:rgba(0,0,0,.45);
+  }
+  /* Badge a top-barban: normál flow */
+  .cam-top-bar #cam-badge{
+    position:relative!important;
+    top:auto!important;left:auto!important;
+    transform:none!important;
+  }
+  /* Portrait gomb a top-barban */
+  .cam-top-bar #cam-portrait-btn{
+    position:relative!important;
+    top:auto!important;right:auto!important;
+  }
+  /* Alsó vezérlők: elegáns sávban */
+  body.cam-active-mode .cam-controls{
+    margin-bottom:16px!important;
+    flex-shrink:0!important;
+    background:rgba(0,0,0,.5)!important;
+  }
 }
 @media(min-width:769px){
   .logo-text-short{display:none}
@@ -651,12 +697,10 @@ self.addEventListener('fetch',e=>{
     <div class="canvas-hint" id="canvas-hint"></div>
     <div id="cam-overlay">
       <div class="cam-flash" id="cam-flash"></div>
-      <div id="cam-badge">● LIVE</div>
-      <div id="cam-orient-hint">
-        <span id="cam-orient-hint-txt">💡 Ha még nem tetted meg, kapcsold be az <strong>elforgatás-zárat</strong> a telefon vezérlőközpontjában!</span>
-        <button id="cam-orient-hint-close" onclick="dismissOrientHint()" title="Bezárás">✕</button>
-      </div>
-      <button id="cam-portrait-btn" onclick="togglePortraitMode()" title="Portré mód — háttér elmosás">
+      <!-- Felső sáv: LIVE badge + PORTRÉ gomb -->
+      <div class="cam-top-bar">
+        <div id="cam-badge">● LIVE</div>
+        <button id="cam-portrait-btn" onclick="togglePortraitMode()" title="Portré mód — háttér elmosás">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
           <circle cx="8" cy="5" r="2.5"/>
           <path d="M3 14c0-3 2-5 5-5s5 2 5 5"/>
@@ -664,7 +708,13 @@ self.addEventListener('fetch',e=>{
           <path d="M15 8.5c-1-1-2-1.5-3-1.5" stroke-opacity=".4"/>
         </svg>
         PORTRÉ
-      </button>
+        </button>
+      </div>
+      <!-- Orient hint és portrait slider a kamera képen belül -->
+      <div id="cam-orient-hint">
+        <span id="cam-orient-hint-txt">💡 Ha még nem tetted meg, kapcsold be az <strong>elforgatás-zárat</strong> a telefon vezérlőközpontjában!</span>
+        <button id="cam-orient-hint-close" onclick="dismissOrientHint()" title="Bezárás">✕</button>
+      </div>
       <div id="cam-portrait-loading">⏳ betöltés...</div>
       <div id="cam-portrait-slider">
         <label>BLUR</label>
@@ -972,7 +1022,7 @@ const FONTS=[
   {id:'rocksalt',    lbl:'Rock Salt',    css:'"Rock Salt", cursive'},
 ];
 const AR_BTNS=[
-  {ar:'original',label:'Free',w:22,h:17},{ar:'1:1',label:'1:1',w:18,h:18},
+  {ar:'original',label:'Original',w:22,h:17},{ar:'1:1',label:'1:1',w:18,h:18},
   {ar:'16:9',label:'16:9',w:22,h:12},{ar:'9:16',label:'9:16',w:12,h:22},
   {ar:'4:3',label:'4:3',w:22,h:17},{ar:'3:4',label:'3:4',w:17,h:22},
   {ar:'2:3',label:'2:3',w:15,h:22},{ar:'3:2',label:'3:2',w:22,h:15},
@@ -1245,7 +1295,10 @@ function canvasSize(){
     return{w, h};
   }
   const imgAR=origImg.width/origImg.height;
-  const maxW2=ca.clientWidth*0.92, maxH2=ca.clientHeight*0.92;
+  const isMob=window.innerWidth<=768;
+  // Mobilon szerkesztőben: teljes szélesség, magasság a képarányból
+  const maxW2=isMob ? ca.clientWidth*0.96 : ca.clientWidth*0.92;
+  const maxH2=isMob ? ca.clientWidth*0.96/imgAR*2 : ca.clientHeight*0.92; // mobilon nagy maxH → nem korlátoz
 
   if(frameType==='polaroid'){
     // Polaroid outer AR: inner image (selected AR or square) + borders
@@ -3235,20 +3288,19 @@ function camLoop(ts){
   // Mirror to fullscreen canvas if active
   if(camFsActive&&_camFsCanvas&&_camFsCtx){
     if(_camFsPortrait){
-      // Mobilon portrait fullscreen: 3:4 arány, forgatott kép
-      const fsW=Math.round(window.innerWidth*window.devicePixelRatio)||window.innerWidth;
-      const fsH=Math.round(window.innerHeight*window.devicePixelRatio)||window.innerHeight;
+      // Mobilon portrait fullscreen: 3:4 arány
+      // A szűrők már benne vannak a _camPrvCanvas-ban (w×h méretű, szűrőzött)
+      // Skálázzuk fel a portrait canvas méretébe
+      const fsW=window.innerWidth;
+      const fsH=window.innerHeight;
       const pW=Math.min(fsW,Math.round(fsH*3/4));
       const pH=Math.round(pW*4/3);
       if(_camFsCanvas.width!==pW||_camFsCanvas.height!==pH){
         _camFsCanvas.width=pW;_camFsCanvas.height=pH;
       }
-      // Cover: videó kitölti a portrait canvas-t
-      const pScale=Math.max(pW/vw,pH/vh);
-      const psw=Math.round(vw*pScale),psh=Math.round(vh*pScale);
-      const pox=Math.round((pW-psw)/2),poy=Math.round((pH-psh)/2);
+      // _camPrvCanvas-ból rajzolunk — szűrők megmaradnak!
       _camFsCtx.clearRect(0,0,pW,pH);
-      _camFsCtx.drawImage(camVideo,0,0,vw,vh,pox,poy,psw,psh);
+      _camFsCtx.drawImage(_camPrvCanvas,0,0,w,h,0,0,pW,pH);
     } else {
       if(_camFsCanvas.width!==w||_camFsCanvas.height!==h){_camFsCanvas.width=w;_camFsCanvas.height=h;}
       _camFsCtx.drawImage(_camPrvCanvas,0,0);
