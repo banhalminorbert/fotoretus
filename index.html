@@ -387,23 +387,26 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
 /* ── Orientáció tipp sáv a live kameránál ── */
 #cam-orient-hint{
   position:absolute;
-  top:50%;
+  top:28%;
   left:50%;
   transform:translate(-50%,-50%);
   z-index:3;
   background:rgba(0,0,0,.80);
   border:1px solid rgba(255,255,255,.22);
   border-radius:16px;
-  padding:14px 16px 14px 18px;
+  padding:12px 14px 12px 16px;
   display:none;
   align-items:center;
-  gap:12px;
+  gap:10px;
   white-space:nowrap;
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
-  max-width:calc(100% - 40px);
+  max-width:calc(100% - 32px);
   animation:fadeInDown .3s ease;
   box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+@media(min-width:769px){
+  #cam-orient-hint{top:35%;}
 }
 #cam-orient-hint.visible{display:flex}
 #cam-orient-hint span{
@@ -426,7 +429,7 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   transition:background .15s;
 }
 #cam-orient-hint-close:hover{background:rgba(255,255,255,.3)}
-@keyframes fadeInDown{from{opacity:0;transform:translateX(-50%) translateY(-6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes fadeInDown{from{opacity:0;transform:translate(-50%,-60%)}to{opacity:1;transform:translate(-50%,-50%)}}
 
 /* ── Portré mód gomb ── */
 #cam-portrait-btn{
@@ -1266,10 +1269,19 @@ function getFilteredCanvas(w,h){
 function arNum(ar){if(ar==='original')return null;const[w,h]=ar.split(':').map(Number);return w/h;}
 
 function canvasSize(){
-  if(!origImg) return{w:800,h:600};
   const ca=document.getElementById('carea');
-  const maxW=ca.clientWidth*0.92, maxH=ca.clientHeight*0.92;
+  const maxW=ca.clientWidth, maxH=ca.clientHeight;
+  if(!origImg){
+    // Live módban: carea teljes területét használjuk, AR szerint skálázva
+    const tAR=arNum(currentAR);
+    if(!tAR) return{w:Math.round(maxW),h:Math.round(maxH)};
+    let w,h;
+    if(tAR>=1){w=Math.min(maxW,maxH*tAR);h=w/tAR;}
+    else{h=Math.min(maxH,maxW/tAR);w=h*tAR;}
+    return{w:Math.round(w),h:Math.round(h)};
+  }
   const imgAR=origImg.width/origImg.height;
+  const maxW2=ca.clientWidth*0.92, maxH2=ca.clientHeight*0.92;
 
   if(frameType==='polaroid'){
     // Polaroid outer AR: inner image (selected AR or square) + borders
@@ -1280,15 +1292,15 @@ function canvasSize(){
     // outerAR = innerAR*(1-0.11) / (1 - innerAR*0.255) -- if innerAR*0.255 < 1
     const outerAR=(innerAR*0.89)/(1+innerAR*0.255);
     let w,h;
-    if(outerAR>=1){w=Math.min(maxW,maxH*outerAR);h=w/outerAR;}
-    else{h=Math.min(maxH,maxW/outerAR);w=h*outerAR;}
+    if(outerAR>=1){w=Math.min(maxW2,maxH2*outerAR);h=w/outerAR;}
+    else{h=Math.min(maxH2,maxW2/outerAR);w=h*outerAR;}
     return{w:Math.round(w),h:Math.round(h)};
   }
 
   const tAR=arNum(currentAR)??imgAR;
   let w,h;
-  if(tAR>=1){w=Math.min(maxW,maxH*tAR);h=w/tAR;}
-  else{h=Math.min(maxH,maxW/tAR);w=h*tAR;}
+  if(tAR>=1){w=Math.min(maxW2,maxH2*tAR);h=w/tAR;}
+  else{h=Math.min(maxH2,maxW2/tAR);w=h*tAR;}
   return{w:Math.round(w),h:Math.round(h)};
 }
 
@@ -4452,12 +4464,12 @@ window.addEventListener('resize',()=>{
   <div id="cam-fs-badge">● LIVE</div>
   <!-- Orientáció hint — fullscreen nézetben is -->
   <div id="cam-fs-orient-hint" style="
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    position:absolute;top:18%;left:50%;transform:translate(-50%,-50%);
     z-index:3;background:rgba(0,0,0,.80);border:1px solid rgba(255,255,255,.22);
-    border-radius:16px;padding:14px 16px 14px 18px;
-    display:none;align-items:center;gap:12px;
+    border-radius:16px;padding:12px 14px 12px 16px;
+    display:none;align-items:center;gap:10px;
     white-space:nowrap;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-    max-width:calc(100vw - 40px);box-shadow:0 8px 32px rgba(0,0,0,.5);
+    max-width:calc(100vw - 32px);box-shadow:0 8px 32px rgba(0,0,0,.5);
   ">
     <span id="cam-fs-orient-hint-txt" style="font-size:12px;font-weight:400;color:rgba(255,255,255,.92);line-height:1.5;white-space:normal">
       💡 Ha még nem tetted meg, kapcsold be az <strong>elforgatás-zárat</strong> a telefon vezérlőközpontjában!
