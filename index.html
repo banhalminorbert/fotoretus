@@ -2994,21 +2994,48 @@ async function dlBlob(blob,name){
   // EXIF/metadata injektálás
   try{ blob=await injectMetadata(blob); }catch(e){}
 
-  // Web Share API: lets iOS save directly to Photos/Files
-  if(navigator.share&&navigator.canShare){
+  const ua=navigator.userAgent||'';
+  const isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
+  const isSafari=isIOS&&/Safari/.test(ua)&&!/CriOS|FxiOS|OPiOS/.test(ua);
+
+  // iOS Safari: Web Share API (Fotókba ment közvetlenül)
+  if(isIOS && isSafari && navigator.share && navigator.canShare){
     const file=new File([blob],name,{type:blob.type||'image/jpeg'});
     try{
       if(navigator.canShare({files:[file]})){
         await navigator.share({files:[file],title:'VIPACH Photo'});
         return;
       }
-    }catch(e){ /* user cancelled or share failed — fall through */ }
+    }catch(e){ /* cancelled or unsupported — fall through */ }
+    // iOS Safari fallback: data URL új tabban
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const win=window.open('','_blank');
+      if(win){
+        win.document.write(`<html><body style="margin:0;background:#111;text-align:center"><img src="${ev.target.result}" style="max-width:100%;display:block;margin:0 auto"><p style="color:#fff;font-family:sans-serif;padding:12px;font-size:14px">Tartsd nyomva a képet → Kép mentése / Save Image</p></body></html>`);
+        win.document.close();
+      }
+    };
+    reader.readAsDataURL(blob);
+    return;
   }
-  // Standard download (desktop + Android)
+
+  // Android (beleértve Xiaomi MIUI), Desktop Chrome/Firefox/Edge:
+  // <a download> a legmegbízhatóbb módszer
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=name;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  try{
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=name;
+    a.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ try{document.body.removeChild(a);}catch(x){} URL.revokeObjectURL(url); },3000);
+  }catch(e){
+    // Végső fallback: tab megnyitás
+    window.open(url,'_blank');
+    setTimeout(()=>URL.revokeObjectURL(url),8000);
+  }
 }
 
 function toggleRec(){if(recording)stopRec();else startRec();}
@@ -3547,7 +3574,7 @@ const _helpBodyHU = `
           <div class="help-step-ico">📷</div>
           <div class="help-step-txt">
             <strong>1. lépés — Kamera vagy feltöltés! 🤳</strong>
-            <span>A <b>Kamera</b> fül az első — a kamera kép <b>automatikusan kitölti a teljes rendelkezésre álló területet</b>, fekete sávok nélkül! Nyomd meg a nagy fehér kört egy fotóhoz. Ha a kamera be van kapcsolva, a <b>Hozzáadás (+)</b> fül tartalma eltűnik — először kapcsold ki a kamerát (✕ gomb), majd töltsd fel a képed! 🐱 Betöltött kép után a <b>Fotó</b> fülön megjelenik egy kis <b>Csere</b> gomb — ezzel bármikor lecserélheted a képet. Amikor kész a fotód, a szerkesztő panel tetején jobb oldalon egy kis <b>✕ gombbal</b> el tudod rejteni a menüsort, hogy a kép nagyobb legyen.</span>
+            <span>A <b>Kamera</b> fül az első — a kamera kép <b>automatikusan kitölti a teljes rendelkezésre álló területet</b>, fekete sávok nélkül! Nyomd meg a nagy fehér kört egy fotóhoz. Ha a kamera be van kapcsolva, a <b>Hozzáadás (+)</b> fül tartalma eltűnik — először kapcsold ki a kamerát (✕ gomb), majd töltsd fel a képed! 🐱 Betöltött kép után a <b>Fotó</b> fülön megjelenik egy kis <b>Csere</b> gomb — ezzel bármikor lecserélheted a képet. Minden szerkesztő fül tetején jobb oldalon van egy <b>✕ gomb</b> — ezzel összecsukható a panel, és a kép tölti ki a képernyőt. Újra megnyitni a fülekre kattintva lehet.</span>
           </div>
         </div>
         <div class="help-step">
@@ -3732,7 +3759,7 @@ const _helpBodyHU = `
           <div class="help-step-ico">⬇️</div>
           <div class="help-step-txt">
             <strong>Kép letöltése — csak elmented! 📁</strong>
-            <span>A <b>Kép letöltése</b> opcióval a szerkesztett fotó a <b>legjobb minőségben</b> kerül az eszközödre. Aztán: küldd el, tedd ki, nyomtasd ki — büszke lehetsz rá! 🌟</span>
+            <span>A <b>Kép letöltése</b> opcióval a szerkesztett fotó a <b>legjobb minőségben</b> kerül az eszközödre. 📱 <b>Android (Xiaomi/Samsung/stb.)</b>: a kép automatikusan a Letöltések mappába kerül — nézd a felső értesítési sávot! 🍎 <b>iPhone (Safari)</b>: egy megosztás ablak nyílik — válaszd a "Fotókba mentés" opciót. 💻 <b>Számítógépen</b>: a szokásos letöltési mappába kerül.</span>
           </div>
         </div>
         <div class="help-step">
@@ -3758,7 +3785,7 @@ const _helpBodyHU = `
           <div class="help-step-ico">🤖</div>
           <div class="help-step-txt">
             <strong>Androidon (Chrome) 📱</strong>
-            <span>Chrome-ban nyisd meg az appot, koppints a jobb felső sarokban lévő <b>három pontra (⋮)</b>, majd válaszd a <b>"Hozzáadás a kezdőképernyőhöz"</b> opciót. Puff — megjelenik az ikonja, és úgy indul, mint egy igazi app! Internet nélkül is! 🎉</span>
+            <span>Chrome-ban nyisd meg az appot, koppints a jobb felső sarokban lévő <b>három pontra (⋮)</b>, majd válaszd a <b>"Hozzáadás a kezdőképernyőhöz"</b> opciót. 💡 <b>Xiaomi / MIUI böngészőben</b>: használj inkább Chrome-ot a letöltéshez — a MIUI böngésző néha blokkolja a fájlmentést. Ha Chrome nem elérhető, a kép az értesítési sávban jelenik meg letöltésként. Puff — megjelenik az ikonja, és úgy indul, mint egy igazi app! Internet nélkül is! 🎉</span>
           </div>
         </div>
         <div class="help-step">
@@ -3899,7 +3926,7 @@ const HELP_CONTENT = {
       <div class="help-section-title">🚀 How to get started?</div>
       <div class="help-step"><div class="help-step-ico">📷</div><div class="help-step-txt">
         <strong>Step 1 — Camera or upload! 🤳</strong>
-        <span>The <b>Camera</b> tab is first — the camera image <b>automatically fills the entire available area</b>, with no black bars! Press the big white circle to take a photo. When the camera is on, the <b>Photo (+)</b> tab content hides — turn off the camera first (✕ button), then upload your image! 🐱 After loading an image, a small <b>Change</b> button appears in the <b>Photo</b> tab — use it to swap the image anytime. Once your photo is ready, you can hide the panel using the small <b>✕ button</b> at the top right of the editing panel — this gives your image more space.</span>
+        <span>The <b>Camera</b> tab is first — the camera image <b>automatically fills the entire available area</b>, with no black bars! Press the big white circle to take a photo. When the camera is on, the <b>Photo (+)</b> tab content hides — turn off the camera first (✕ button), then upload your image! 🐱 After loading an image, a small <b>Change</b> button appears in the <b>Photo</b> tab — use it to swap the image anytime. Every editing tab has a small <b>✕ button</b> at the top right — tap it to collapse the panel so your image fills the screen. Tap any tab again to reopen the panel.</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">🟡</div><div class="help-step-txt">
         <strong>The golden camera icon means: live mode is on! ✨</strong>
@@ -3996,7 +4023,7 @@ const HELP_CONTENT = {
       </div></div>
       <div class="help-step"><div class="help-step-ico">⬇️</div><div class="help-step-txt">
         <strong>Download image! 📁</strong>
-        <span><b>Download image</b> saves your photo in the best quality. The EXIF data shows <b>VIPACH PHOTOSTUDIO</b> as creator! 🌟</span>
+        <span><b>Download image</b> saves your photo in the best quality. 📱 <b>Android (Xiaomi/Samsung/etc.)</b>: the image goes to your Downloads folder — check the notification bar! 🍎 <b>iPhone (Safari)</b>: a share sheet opens — tap "Save to Photos". 💻 <b>Desktop</b>: saves to your usual Downloads folder. The EXIF shows <b>VIPACH PHOTOSTUDIO</b> as creator! 🌟</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">💙</div><div class="help-step-txt">
         <strong>Share in the VIPACH group! 🎉</strong>
@@ -4057,7 +4084,7 @@ const HELP_CONTENT = {
       <div class="help-section-title">🚀 Wie fange ich an?</div>
       <div class="help-step"><div class="help-step-ico">📷</div><div class="help-step-txt">
         <strong>Schritt 1 — Kamera oder Upload! 🤳</strong>
-        <span>Der <b>Kamera</b>-Tab ist der erste — das Kamerabild <b>füllt automatisch den gesamten verfügbaren Bereich</b>, ohne schwarze Balken! Drücke den großen weißen Kreis für ein Foto. Wenn die Kamera läuft, wird der Inhalt des <b>Foto (+)</b>-Tabs ausgeblendet — schalte zuerst die Kamera aus (✕-Button), dann lade dein Bild hoch! 🐱 Nach dem Laden eines Bildes erscheint im <b>Foto</b>-Tab ein kleiner <b>Ändern</b>-Button — damit kannst du das Bild jederzeit wechseln. Wenn dein Foto fertig ist, kannst du die Menüleiste mit dem kleinen <b>✕-Button</b> oben rechts im Panel ausblenden — so hat dein Bild mehr Platz.</span>
+        <span>Der <b>Kamera</b>-Tab ist der erste — das Kamerabild <b>füllt automatisch den gesamten verfügbaren Bereich</b>, ohne schwarze Balken! Drücke den großen weißen Kreis für ein Foto. Wenn die Kamera läuft, wird der Inhalt des <b>Foto (+)</b>-Tabs ausgeblendet — schalte zuerst die Kamera aus (✕-Button), dann lade dein Bild hoch! 🐱 Nach dem Laden eines Bildes erscheint im <b>Foto</b>-Tab ein kleiner <b>Ändern</b>-Button — damit kannst du das Bild jederzeit wechseln. Jeder Bearbeitungs-Tab hat oben rechts einen kleinen <b>✕-Button</b> — tippe ihn an, um das Panel einzuklappen und das Bild im Vollbild zu sehen. Durch Antippen eines Tabs wird das Panel wieder geöffnet.</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">🟡</div><div class="help-step-txt">
         <strong>Das goldene Kamera-Symbol zeigt: Live-Modus ist an! ✨</strong>
@@ -4154,7 +4181,7 @@ const HELP_CONTENT = {
       </div></div>
       <div class="help-step"><div class="help-step-ico">⬇️</div><div class="help-step-txt">
         <strong>Bild herunterladen! 📁</strong>
-        <span><b>Bild herunterladen</b> speichert dein Foto in bester Qualität. Die EXIF-Daten zeigen <b>VIPACH PHOTOSTUDIO</b> als Ersteller! 🌟</span>
+        <span><b>Bild herunterladen</b> speichert dein Foto in bester Qualität. 📱 <b>Android (Xiaomi/Samsung/etc.)</b>: das Bild landet im Downloads-Ordner — sieh in der Benachrichtigungsleiste nach! 🍎 <b>iPhone (Safari)</b>: ein Teilen-Menü öffnet sich — wähle "In Fotos sichern". 💻 <b>Desktop</b>: wird in deinen Downloads-Ordner gespeichert. Die EXIF-Daten zeigen <b>VIPACH PHOTOSTUDIO</b> als Ersteller! 🌟</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">💙</div><div class="help-step-txt">
         <strong>In der VIPACH-Gruppe teilen! 🎉</strong>
@@ -4170,7 +4197,7 @@ const HELP_CONTENT = {
       </div></div>
       <div class="help-step"><div class="help-step-ico">🤖</div><div class="help-step-txt">
         <strong>Auf Android (Chrome) 📱</strong>
-        <span>Öffne die App in Chrome, tippe auf <b>⋮ Menü</b> und wähle <b>Zum Startbildschirm hinzufügen</b>. Funktioniert auch offline! 🎉</span>
+        <span>Öffne die App in Chrome, tippe auf <b>⋮ Menü</b> und wähle <b>Zum Startbildschirm hinzufügen</b>. 💡 <b>Xiaomi / MIUI-Browser</b>: Nutze Chrome für Downloads — der eingebaute MIUI-Browser kann das Speichern blockieren. Funktioniert auch offline! 🎉</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">🍎</div><div class="help-step-txt">
         <strong>iPhone / iPad (Safari) 🍏</strong>
@@ -4291,7 +4318,7 @@ window.addEventListener('resize',()=>{
           <div class="help-step-ico">📷</div>
           <div class="help-step-txt">
             <strong>1. lépés — Kamera vagy feltöltés! 🤳</strong>
-            <span>A <b>Kamera</b> fül az első — a kamera kép <b>automatikusan kitölti a teljes rendelkezésre álló területet</b>, fekete sávok nélkül! Nyomd meg a nagy fehér kört egy fotóhoz. Ha a kamera be van kapcsolva, a <b>Hozzáadás (+)</b> fül tartalma eltűnik — először kapcsold ki a kamerát (✕ gomb), majd töltsd fel a képed! 🐱 Betöltött kép után a <b>Fotó</b> fülön megjelenik egy kis <b>Csere</b> gomb — ezzel bármikor lecserélheted a képet. Amikor kész a fotód, a szerkesztő panel tetején jobb oldalon egy kis <b>✕ gombbal</b> el tudod rejteni a menüsort, hogy a kép nagyobb legyen.</span>
+            <span>A <b>Kamera</b> fül az első — a kamera kép <b>automatikusan kitölti a teljes rendelkezésre álló területet</b>, fekete sávok nélkül! Nyomd meg a nagy fehér kört egy fotóhoz. Ha a kamera be van kapcsolva, a <b>Hozzáadás (+)</b> fül tartalma eltűnik — először kapcsold ki a kamerát (✕ gomb), majd töltsd fel a képed! 🐱 Betöltött kép után a <b>Fotó</b> fülön megjelenik egy kis <b>Csere</b> gomb — ezzel bármikor lecserélheted a képet. Minden szerkesztő fül tetején jobb oldalon van egy <b>✕ gomb</b> — ezzel összecsukható a panel, és a kép tölti ki a képernyőt. Újra megnyitni a fülekre kattintva lehet.</span>
           </div>
         </div>
         <div class="help-step">
@@ -4476,7 +4503,7 @@ window.addEventListener('resize',()=>{
           <div class="help-step-ico">⬇️</div>
           <div class="help-step-txt">
             <strong>Kép letöltése — csak elmented! 📁</strong>
-            <span>A <b>Kép letöltése</b> opcióval a szerkesztett fotó a <b>legjobb minőségben</b> kerül az eszközödre. Aztán: küldd el, tedd ki, nyomtasd ki — büszke lehetsz rá! 🌟</span>
+            <span>A <b>Kép letöltése</b> opcióval a szerkesztett fotó a <b>legjobb minőségben</b> kerül az eszközödre. 📱 <b>Android (Xiaomi/Samsung/stb.)</b>: a kép automatikusan a Letöltések mappába kerül — nézd a felső értesítési sávot! 🍎 <b>iPhone (Safari)</b>: egy megosztás ablak nyílik — válaszd a "Fotókba mentés" opciót. 💻 <b>Számítógépen</b>: a szokásos letöltési mappába kerül.</span>
           </div>
         </div>
         <div class="help-step">
@@ -4502,7 +4529,7 @@ window.addEventListener('resize',()=>{
           <div class="help-step-ico">🤖</div>
           <div class="help-step-txt">
             <strong>Androidon (Chrome) 📱</strong>
-            <span>Chrome-ban nyisd meg az appot, koppints a jobb felső sarokban lévő <b>három pontra (⋮)</b>, majd válaszd a <b>"Hozzáadás a kezdőképernyőhöz"</b> opciót. Puff — megjelenik az ikonja, és úgy indul, mint egy igazi app! Internet nélkül is! 🎉</span>
+            <span>Chrome-ban nyisd meg az appot, koppints a jobb felső sarokban lévő <b>három pontra (⋮)</b>, majd válaszd a <b>"Hozzáadás a kezdőképernyőhöz"</b> opciót. 💡 <b>Xiaomi / MIUI böngészőben</b>: használj inkább Chrome-ot a letöltéshez — a MIUI böngésző néha blokkolja a fájlmentést. Ha Chrome nem elérhető, a kép az értesítési sávban jelenik meg letöltésként. Puff — megjelenik az ikonja, és úgy indul, mint egy igazi app! Internet nélkül is! 🎉</span>
           </div>
         </div>
         <div class="help-step">
