@@ -159,6 +159,10 @@ body.portrait-active #cam-portrait-ctrl-btn{
   color:#C9A84C!important;
 }
 
+.logo-link{text-decoration:none;color:inherit;}
+.logo-link:hover{opacity:.8;}
+.footer-team-link{text-decoration:none;color:inherit;font-weight:600;}
+.footer-team-link:hover{opacity:.75;}
 /* ── HEADER ── */
 .hdr{
   background:rgba(8,13,24,.97);
@@ -505,38 +509,57 @@ body:not(.cam-active-mode) #preview{
 
 
 
-/* ── Mobil panel X gomb — FIXED, soha nem gördül ── */
-.mobile-panel-close-btn{
-  display:none;
-}
+/* ── Mobil panel X gomb — panel tetején sticky, tartalom görget alatta ── */
+.mobile-panel-close-btn{ display:none; }
+.mobile-panel-topbar{ display:none; }
 @media(max-width:768px){
-  /* Panel padding hogy a tartalom ne menjen a gomb alá */
-  .mobile-panel{padding-top:42px!important;}
+  /* Panel flex column, topbar sticky, tartalom görgethető */
+  .mobile-panel{
+    display:flex;
+    flex-direction:column;
+    overflow:hidden!important; /* külső panel nem görgethető */
+  }
+  .mobile-panel-topbar{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    padding:6px 8px 4px;
+    flex-shrink:0; /* nem zsugorodik */
+    background:var(--bg);
+    position:sticky;top:0;
+    z-index:10;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  /* A tényleges görgetési terület a topbar alatt */
+  .mobile-panel-scroll{
+    flex:1;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:8px;
+  }
   .mobile-panel-close-btn{
     display:flex;
     align-items:center;justify-content:center;
-    position:fixed;
-    /* A tab-bar magassága ~50px, a panel felette van — a gomb a panel tetejére kerül */
-    bottom:calc(50px + env(safe-area-inset-bottom, 0px) + 8px);
-    right:10px;
-    width:30px;height:30px;
-    background:rgba(14,21,37,.95);
-    border:1px solid rgba(255,255,255,.2);
+    width:28px;height:28px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);
     border-radius:50%;
     cursor:pointer;
-    z-index:200;
-    color:rgba(255,255,255,.75);
+    color:rgba(255,255,255,.7);
     font-size:13px;line-height:1;
-    flex-shrink:0;
     -webkit-tap-highlight-color:transparent;
     transition:all .18s;
-    box-shadow:0 2px 12px rgba(0,0,0,.5);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     pointer-events:all;
+    flex-shrink:0;
   }
-  .mobile-panel-close-btn:active{transform:scale(.88);color:#fff;background:rgba(201,168,76,.25);border-color:var(--accent);}
-  /* Panel összecsukva: X gomb rejtett */
-  body.panel-collapsed .mobile-panel-close-btn{display:none!important;}
+  .mobile-panel-close-btn:active{
+    transform:scale(.88);
+    color:#C9A84C;
+    background:rgba(201,168,76,.18);
+    border-color:rgba(201,168,76,.5);
+  }
+  body.panel-collapsed .mobile-panel-topbar{display:none!important;}
+  body.cam-active-mode .mobile-panel-topbar{display:none!important;}
 }
 @media(max-width:768px){
   /* Panel wrapper: position:relative a toggle gombhoz */
@@ -794,7 +817,7 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   .mtab .mtab-ico{height:18px;display:flex;align-items:center;justify-content:center;opacity:.85;transition:opacity .15s}
   .mtab.active{color:var(--accent);border-top-color:var(--accent)}
   .mtab.active .mtab-ico{opacity:1}
-  .mobile-panel{order:2;flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:0;padding:8px;-webkit-overflow-scrolling:touch;min-height:0}
+  .mobile-panel{order:2;flex:1;background:var(--bg);display:flex;flex-direction:column;gap:0;min-height:0;overflow:hidden;}
   #m-footer{display:flex;order:4;padding:10px 14px 12px}
   .hdr{
     padding:0 10px;
@@ -918,8 +941,8 @@ self.addEventListener('fetch',e=>{
 <!-- ════════ HEADER ════════ -->
 <header class="hdr">
   <div class="logo">
-    <span class="logo-text logo-text-full">VIPACH <span style="font-weight:300;letter-spacing:.06em">PHOTOSTUDIO</span></span>
-    <span class="logo-text logo-text-short">VIPACH</span>
+    <a href="https://hu.wikipedia.org/wiki/VIPACH" target="_blank" rel="noopener" class="logo-text logo-text-full logo-link">VIPACH <span style="font-weight:300;letter-spacing:.06em">PHOTOSTUDIO</span></a>
+    <a href="https://hu.wikipedia.org/wiki/VIPACH" target="_blank" rel="noopener" class="logo-text logo-text-short logo-link">VIPACH</a>
     <span class="logo-badge">v.7</span>
     <!-- LIVE badge a headerben — csak cam-active módban látszik -->
     <span id="hdr-live-badge">● LIVE</span>
@@ -976,7 +999,7 @@ self.addEventListener('fetch',e=>{
       <div class="sidebar-content" id="d-panel"></div>
       <footer class="app-footer">
         <div class="app-footer-name">
-          <span><span class="footer-by">Készítette</span>: <strong class="footer-team">Be Smart Kids Club csapata</strong></span>
+          <span><span class="footer-by">Készítette</span>: <a href="https://www.magyariskola.at/event-details/be-smart-kids-club" target="_blank" rel="noopener" class="footer-team footer-team-link">Be Smart Kids Club csapata</a></span>
         </div>
         <div class="app-footer-sub">
           <span>© 2026</span>
@@ -1035,7 +1058,7 @@ self.addEventListener('fetch',e=>{
         <span id="cam-portrait-slval">12px</span>
       </div>
       <div class="cam-controls">
-        <!-- Mobilon: X helyett PORTRÉ gomb (csak mobilon látszik, CSS szabályozza) -->
+        <!-- Mobilon: portré gomb + ? info -->
         <button class="cam-icon-btn cam-portrait-mobile-btn" id="cam-portrait-ctrl-btn" onclick="togglePortraitMode()" title="Portré mód">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
             <circle cx="8" cy="5" r="2.5"/>
@@ -1061,14 +1084,16 @@ self.addEventListener('fetch',e=>{
 <!-- MOBILE BOTTOM TABS -->
 <div class="mobile-tab-bar" id="m-tabs"></div>
 <div class="mobile-panel" id="m-panel">
-  <button class="mobile-panel-close-btn" id="m-panel-close-btn" onclick="toggleMobilePanel()" title="Panel bezárása">✕</button>
+  <div class="mobile-panel-topbar">
+    <button class="mobile-panel-close-btn" id="m-panel-close-btn" onclick="toggleMobilePanel()" title="Panel bezárása">✕</button>
+  </div>
   <button id="m-panel-toggle" onclick="toggleMobilePanel()" title="Panel bezárása/nyitása">
     <span id="m-panel-toggle-ico"></span>
   </button>
 </div>
 <footer class="app-footer" id="m-footer" style="background:var(--surf);border-top:1px solid rgba(255,255,255,.05)">
   <div class="app-footer-name">
-    <span><span class="footer-by">Készítette</span>: <strong class="footer-team">Be Smart Kids Club csapata</strong></span>
+    <span><span class="footer-by">Készítette</span>: <a href="https://www.magyariskola.at/event-details/be-smart-kids-club" target="_blank" rel="noopener" class="footer-team footer-team-link">Be Smart Kids Club csapata</a></span>
   </div>
   <div class="app-footer-bottom-row">
     <div class="app-footer-sub">
@@ -1104,6 +1129,9 @@ self.addEventListener('fetch',e=>{
   </div>
   <div class="text-kbd-hint" id="text-kbd-hint">← Húzd a csúszkával a felirat helyzetét →</div>
 </div>
+
+<!-- ════ MOBIL PANEL FIX X GOMB (body szintű, soha nem görgethető) ════ -->
+<button class="mobile-panel-close-btn" id="m-panel-close-btn" onclick="toggleMobilePanel()" title="Panel bezárása">✕</button>
 
 <div class="toast" id="toast"></div>
 
@@ -1259,7 +1287,11 @@ function switchLang(l){
   const rl=document.getElementById('recLabel'); if(rl) rl.textContent=T('recLabel');
   // Footer (desktop + mobile)
   document.querySelectorAll('.footer-by').forEach(el=>el.textContent=T('footerBy'));
-  document.querySelectorAll('.footer-team').forEach(el=>el.textContent=T('teamName'));
+  document.querySelectorAll('.footer-team').forEach(el=>{
+    const name=T('teamName');
+    if(el.tagName==='A'){el.textContent=name;}
+    else{el.textContent=name;}
+  });
   document.querySelectorAll('.footer-by-alt').forEach(el=>el.textContent=T('footerByAlt'));
   document.querySelectorAll('.footer-rights').forEach(el=>el.textContent=T('footerRights'));
   document.querySelectorAll('.footer-free').forEach(el=>el.textContent=T('footerFree'));
@@ -2933,24 +2965,38 @@ function buildPanel_Motion(container){
 // TAB SYSTEM
 // ══════════════════════════════════════════
 function buildPanel(tabId, container){
-  container.innerHTML='';
-  // A fix ✕ gomb visszaállítása (innerHTML törölte)
-  if(container.id==='m-panel'){
-    const closeBtn=document.createElement('button');
-    closeBtn.className='mobile-panel-close-btn';
-    closeBtn.id='m-panel-close-btn';
-    closeBtn.setAttribute('onclick','toggleMobilePanel()');
-    closeBtn.title='Panel bezárása';
-    closeBtn.textContent='✕';
-    container.appendChild(closeBtn);
+  // Topbar (X gomb) megőrzése — csak a scroll tartalmat töröljük
+  let scrollDiv=container.querySelector('.mobile-panel-scroll');
+  if(scrollDiv){
+    scrollDiv.innerHTML='';
+  } else {
+    // Első futás: teljes container reset, topbar + scroll div létrehozása
+    container.innerHTML='';
+    // Topbar visszarakása ha mobilon vagyunk
+    if(window.innerWidth<=768){
+      const topbar=document.createElement('div');
+      topbar.className='mobile-panel-topbar';
+      const closeBtn=document.createElement('button');
+      closeBtn.className='mobile-panel-close-btn';
+      closeBtn.id='m-panel-close-btn';
+      closeBtn.onclick=toggleMobilePanel;
+      closeBtn.title='Panel bezárása';
+      closeBtn.textContent='✕';
+      topbar.appendChild(closeBtn);
+      container.appendChild(topbar);
+    }
+    scrollDiv=document.createElement('div');
+    scrollDiv.className='mobile-panel-scroll';
+    container.appendChild(scrollDiv);
   }
+  const target=window.innerWidth<=768 ? scrollDiv : container;
   switch(tabId){
-    case 'image':   buildPanel_Image(container);   break;
-    case 'filters': buildPanel_Filters(container); break;
-    case 'adjust':  buildPanel_Adjust(container);  break;
-    case 'frame':   buildPanel_Frame(container);   break;
-    case 'text':    buildPanel_Text(container);    break;
-    case 'motion':  buildPanel_Motion(container);  break;
+    case 'image':   buildPanel_Image(target);   break;
+    case 'filters': buildPanel_Filters(target); break;
+    case 'adjust':  buildPanel_Adjust(target);  break;
+    case 'frame':   buildPanel_Frame(target);   break;
+    case 'text':    buildPanel_Text(target);    break;
+    case 'motion':  buildPanel_Motion(target);  break;
   }
 }
 
@@ -3359,22 +3405,7 @@ function toast(msg,dur=2200){
   const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
   clearTimeout(toastTmr);toastTmr=setTimeout(()=>el.classList.remove('show'),dur);
 }
-window.addEventListener('resize',()=>{clearFilterCache();if(origImg&&currentAnim==='none')drawFrame(null);updatePanelCloseBtnPos();});
-
-function updatePanelCloseBtnPos(){
-  if(window.innerWidth>768) return;
-  const tabBar=document.getElementById('m-tabs');
-  const footer=document.getElementById('m-footer');
-  let bottom=8;
-  if(tabBar&&tabBar.offsetHeight) bottom+=tabBar.offsetHeight;
-  else if(footer&&footer.offsetHeight) bottom+=footer.offsetHeight;
-  else bottom+=52;
-  document.querySelectorAll('.mobile-panel-close-btn').forEach(btn=>{
-    btn.style.bottom=bottom+'px';
-  });
-}
-// Kezdeti pozíció beállítása
-requestAnimationFrame(updatePanelCloseBtnPos);
+window.addEventListener('resize',()=>{clearFilterCache();if(origImg&&currentAnim==='none')drawFrame(null);});
 
 // ══════════════════════════════════════════
 // ══════════════════════════════════════════
@@ -3808,7 +3839,6 @@ function toggleMobilePanel(){
   document.body.classList.toggle('panel-collapsed');
   if(camActive) camLastFrame=0;
   else if(origImg) draw();
-  updatePanelCloseBtnPos();
 }
 
 // ══════════════════════════════════════════
@@ -4089,33 +4119,38 @@ const _helpBodyHU = `
 
       <!-- PORTRAIT MODE -->
       <div class="help-section">
-        <div class="help-section-title">📸 Portré mód — mos el a hátteret mint egy profi!</div>
+        <div class="help-section-title">📸 Portré mód — mi ez és mikor érdemes használni?</div>
         <div class="help-step">
-          <div class="help-step-ico">🌟</div>
+          <div class="help-step-ico">🤔</div>
           <div class="help-step-txt">
-            <strong>Mi ez a PORTRÉ gomb a kameránál? ✨</strong>
-            <span>Látod a <b>PORTRÉ</b> feliratú gombot jobb felül a kamera nézetben? Ha rányomsz, az app <b>élőben elmossa a hátteret</b> — te meg éles maradsz! Olyan lesz, mint amikor a profi fotósok nagyon szép, elmosott hátterű portréképeket csinálnak! 📷</span>
-          </div>
-        </div>
-        <div class="help-step">
-          <div class="help-step-ico">🎚️</div>
-          <div class="help-step-txt">
-            <strong>Mennyire legyen elmosott? Neked szabad dönteni! 🎨</strong>
-            <span>A <b>BLUR</b> csúszkával állíthatod be, hogy mennyire mosódjon el a háttér — egy kicsit (álomszerű hatás), vagy nagyon (profi portré stúdió hatás). Próbálgasd, és nézd élőben az eredményt!</span>
+            <strong>Mi ez egyáltalán? 🌫️</strong>
+            <span>A PORTRÉ gomb olyan, mint egy varázslat! 🪄 Az app <b>megnézi a kamera képét</b>, megkeresi rajta az embert (vagy bármilyen előtéri dolgot), és az összes <b>mögöttes hátteret elmossa</b> — te meg éles, tiszta maradsz! Olyan lesz, mint a profi fotósoknál! 📷</span>
           </div>
         </div>
         <div class="help-step">
           <div class="help-step-ico">📱</div>
           <div class="help-step-txt">
-            <strong>Teljes képernyős nézetben is működik! 🖥️</strong>
-            <span>Ha a kamera nézetben a <b>⛶ teljes képernyő</b> gombra nyomsz, a kép kitölti az egész telefon képernyőjét. Ott is megtalálod a <b>portré gombot</b> — bal oldalt a nagy fehér exponáló gomb mellett! A <b>BLUR csúszka</b> is mindig ott van jobb felül — nem kell előtte normál nézetből bekapcsolni, közvetlenül a teljes képernyős nézetből is elindítható! 🎬</span>
+            <strong>De a telefonomban is van portré mód — mi a különbség? 🤳</strong>
+            <span>Nagyszerű kérdés! 😄 A telefon beépített portré módja a <b>hardveres kamerán</b> dolgozik — mielőtt a kép egyáltalán megérkezik az apphoz. Ha közel tartod a telefont és az arc közelében vagy, a telefon már elmossza a hátteret <b>mielőtt ez az app látná</b> — ekkor az app portré módja nem sokat tesz hozzá, mert a kamera már elvégezte a munkát!<br><br>
+            Az <b>app saját portré módja</b> viszont ilyenkor is hasznos:<br>
+            ✅ <b>Hátsó kamerával</b> — tárgyak, növények, csendélet fotóknál, ahol a telefon nem aktiválja automatikusan a portré módját<br>
+            ✅ <b>Böngészőben</b> (Chrome/Safari) — a beépített portré mód nem jut át a böngészőbe, a kamera sima képet küld az appnak → az app elvégzi a háttérelmosást<br>
+            ✅ <b>Szűrőkkel kombinálva</b> — az app szűrői (pl. Neo-Noir, Blade Runner) csak az előtérre hatnak, a háttér más marad — ilyenkor az app portré módja különleges hatást ad!<br>
+            ✅ <b>Régebbi telefonokon</b> ahol nincs beépített portré mód</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">🎚️</div>
+          <div class="help-step-txt">
+            <strong>Mennyire legyen elmosott? Te döntöd el! 🎨</strong>
+            <span>A <b>BLUR</b> csúszkával állíthatod — kicsit (álomszerű, lágy hatás) vagy nagyon (profi stúdió portré hatás). Próbálgasd, nézd élőben az eredményt!</span>
           </div>
         </div>
         <div class="help-step">
           <div class="help-step-ico">⚠️</div>
           <div class="help-step-txt">
-            <strong>Kell hozzá internet? És mi a hátránya? 🌐</strong>
-            <span>Az <b>első bekapcsoláshoz egyszer kell internet</b> — az app letölti a háttér-felismerő programot (~5MB). Utána már offline is működik! Gyengébb telefonokon kicsit lassabb lehet, és iOS Safari-n nem mindig elérhető. <b>Android Chrome-on a legjobb!</b> 🤖</span>
+            <strong>Kell hozzá internet? 🌐</strong>
+            <span>Az <b>első bekapcsoláshoz egyszer kell net</b> (~5MB letöltés). Utána offline is megy! Gyengébb telefonokon lassabb lehet. <b>Android Chrome-on a legjobb!</b> 🤖</span>
           </div>
         </div>
       </div>
@@ -4361,7 +4396,7 @@ const _helpBodyHU = `
 
       <div style="text-align:center;padding:10px 16px 6px;color:var(--text3);font-size:11px;line-height:1.6">
         VIPACH PhotoStudio v7.04 · Készült ❤️-tel<br>
-        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <span class="footer-team">Be Smart Kids Club csapata</span></span><br>
+        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <a href="https://www.magyariskola.at/event-details/be-smart-kids-club" target="_blank" rel="noopener" class="footer-team footer-team-link">Be Smart Kids Club csapata</a></span><br>
         Kérdés esetén írj ide: <a href="mailto:hello@norbertbanhalmi.com" style="color:var(--accent);text-decoration:none;font-weight:600">hello@norbertbanhalmi.com</a>
       </div>
 
@@ -4428,22 +4463,27 @@ const HELP_CONTENT = {
 
 
     <div class="help-section">
-      <div class="help-section-title">📸 Portrait mode — blur the background like a pro!</div>
-      <div class="help-step"><div class="help-step-ico">🌟</div><div class="help-step-txt">
-        <strong>What is the PORTRAIT button? ✨</strong>
-        <span>See the <b>PORTRAIT</b> button in the top right corner of the camera view? Tap it and the app will <b>blur the background in real time</b> — while you stay sharp! It looks just like those beautiful blurry-background portraits that professional photographers take! 📷</span>
+      <div class="help-section-title">📸 Portrait mode — what is it and when does it help?</div>
+      <div class="help-step"><div class="help-step-ico">🤔</div><div class="help-step-txt">
+        <strong>What does it actually do? 🌫️</strong>
+        <span>The PORTRAIT button is like a magic trick! 🪄 The app looks at the camera image, finds the person (or any foreground object), and <b>blurs everything behind it</b> — you stay sharp and clear! Just like professional photographers do! 📷</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">📱</div><div class="help-step-txt">
+        <strong>My phone already has portrait mode — what&rsquo;s the difference? 🤳</strong>
+        <span>Great question! 😄 Your phone&rsquo;s built-in portrait mode works on the <b>hardware camera</b> — before the image even reaches this app. If you&rsquo;re close to a face, the phone blurs the background <b>before the app sees it</b> — then the app&rsquo;s portrait mode doesn&rsquo;t add much, because the camera already did the work!<br><br>
+        But the <b>app&rsquo;s own portrait mode</b> is still useful:<br>
+        ✅ <b>Rear camera</b> — for objects, plants, still life where the phone doesn&rsquo;t auto-activate portrait mode<br>
+        ✅ <b>In the browser</b> (Chrome/Safari) — the built-in portrait mode doesn&rsquo;t reach the browser; the camera sends a plain image → the app does the blur itself<br>
+        ✅ <b>Combined with filters</b> — filters like Neo-Noir or Blade Runner apply only to the foreground → unique effect!<br>
+        ✅ <b>Older phones</b> without a built-in portrait mode</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">🎚️</div><div class="help-step-txt">
         <strong>How blurry? You decide! 🎨</strong>
-        <span>The <b>BLUR</b> slider lets you control how blurry the background gets — a little (dreamy effect) or a lot (professional portrait studio effect). Try it and see the result live!</span>
-      </div></div>
-      <div class="help-step"><div class="help-step-ico">📱</div><div class="help-step-txt">
-        <strong>Works in fullscreen mode too! 🖥️</strong>
-        <span>If you tap the <b>⛶ fullscreen</b> button in camera view, the image fills your whole screen. The <b>portrait button</b> is there too — on the left side next to the big white shutter button! The <b>BLUR slider</b> is always visible in the top right corner — you don't need to enable portrait mode in normal view first, you can start it directly from fullscreen! 🎬</span>
+        <span>Use the <b>BLUR</b> slider — a little (dreamy, soft effect) or a lot (pro studio portrait). Try it and watch it change live!</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">⚠️</div><div class="help-step-txt">
-        <strong>Does it need internet? Any downsides? 🌐</strong>
-        <span><b>Internet is needed once on first use</b> — the app downloads the background detection model (~5MB). After that it works offline too! May be slower on older phones, and not always available on iOS Safari. <b>Best on Android Chrome!</b> 🤖</span>
+        <strong>Does it need internet? 🌐</strong>
+        <span><b>First time only</b>, it downloads the background model (~5MB). After that it works offline! May be slower on older phones. <b>Best on Android Chrome!</b> 🤖</span>
       </div></div>
     </div>
 
@@ -4605,22 +4645,27 @@ const HELP_CONTENT = {
 
 
     <div class="help-section">
-      <div class="help-section-title">📸 Porträt-Modus — Hintergrund wie ein Profi unscharf machen!</div>
-      <div class="help-step"><div class="help-step-ico">🌟</div><div class="help-step-txt">
-        <strong>Was ist der PORTRÄT-Button? ✨</strong>
-        <span>Siehst du den <b>PORTRÉ</b>-Button oben rechts in der Kameraansicht? Tippe drauf und die App macht den <b>Hintergrund in Echtzeit unscharf</b> — du bleibst scharf! Es sieht aus wie die schönen Porträtfotos mit unscharfem Hintergrund von professionellen Fotografen! 📷</span>
+      <div class="help-section-title">📸 Porträt-Modus — was ist das und wann hilft es?</div>
+      <div class="help-step"><div class="help-step-ico">🤔</div><div class="help-step-txt">
+        <strong>Was macht es eigentlich? 🌫️</strong>
+        <span>Der PORTR&Eacute;-Button ist wie ein Zaubertrick! 🪄 Die App schaut auf das Kamerabild, findet die Person (oder ein Vordergrundobjekt) und <b>macht alles dahinter unscharf</b> — du bleibst scharf und klar! Genau wie bei Profi-Fotografen! 📷</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">📱</div><div class="help-step-txt">
+        <strong>Mein Handy hat schon Porträt-Modus — was ist der Unterschied? 🤳</strong>
+        <span>Sehr gute Frage! 😄 Der eingebaute Porträt-Modus deines Handys arbeitet auf der <b>Hardware-Kamera</b> — bevor das Bild überhaupt diese App erreicht. Bist du nah an einem Gesicht, macht das Handy den Hintergrund unscharf <b>bevor die App es sieht</b> — dann fügt der App-Porträt-Modus kaum etwas hinzu, weil die Kamera es schon erledigt hat!<br><br>
+        Aber der <b>eigene Porträt-Modus der App</b> ist trotzdem nützlich:<br>
+        ✅ <b>Rückkamera</b> — für Objekte, Pflanzen, Stillleben, wo das Handy Porträt-Modus nicht automatisch aktiviert<br>
+        ✅ <b>Im Browser</b> (Chrome/Safari) — der eingebaute Porträt-Modus kommt nicht in den Browser → die App macht die Unschärfe selbst<br>
+        ✅ <b>Mit Filtern kombiniert</b> — Filter wie Neo-Noir wirken nur auf den Vordergrund → einzigartiger Effekt!<br>
+        ✅ <b>Ältere Handys</b> ohne eingebauten Porträt-Modus</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">🎚️</div><div class="help-step-txt">
         <strong>Wie unscharf? Du entscheidest! 🎨</strong>
-        <span>Mit dem <b>BLUR</b>-Schieberegler kannst du einstellen, wie stark der Hintergrund unscharf wird — ein bisschen (traumhafter Effekt) oder sehr stark (professioneller Porträtstudio-Effekt). Probiere es aus und sieh das Ergebnis live!</span>
-      </div></div>
-      <div class="help-step"><div class="help-step-ico">📱</div><div class="help-step-txt">
-        <strong>Funktioniert auch im Vollbildmodus! 🖥️</strong>
-        <span>Wenn du in der Kameraansicht auf den <b>⛶ Vollbild</b>-Button tippst, füllt das Bild den ganzen Bildschirm. Den <b>Porträt-Button</b> findest du auch dort — links neben dem großen weißen Auslöser-Button! Der <b>BLUR-Schieberegler</b> ist oben rechts immer sichtbar — du musst den Porträt-Modus nicht zuerst in der normalen Ansicht aktivieren, du kannst ihn direkt im Vollbildmodus starten! 🎬</span>
+        <span>Mit dem <b>BLUR</b>-Schieberegler — wenig (traumhafter Effekt) oder viel (Profi-Studio). Ausprobieren und live sehen!</span>
       </div></div>
       <div class="help-step"><div class="help-step-ico">⚠️</div><div class="help-step-txt">
-        <strong>Braucht es Internet? Gibt es Nachteile? 🌐</strong>
-        <span><b>Einmalig beim ersten Start ist Internet nötig</b> — die App lädt das Hintergrunderkennungs-Modell herunter (~5MB). Danach funktioniert es auch offline! Kann auf älteren Geräten langsamer sein und ist auf iOS Safari nicht immer verfügbar. <b>Am besten auf Android Chrome!</b> 🤖</span>
+        <strong>Braucht es Internet? 🌐</strong>
+        <span><b>Nur beim ersten Mal</b> lädt es das Modell herunter (~5MB). Danach offline nutzbar! Kann auf älteren Geräten langsamer sein. <b>Am besten auf Android Chrome!</b> 🤖</span>
       </div></div>
     </div>
 
@@ -4727,15 +4772,38 @@ function buildHelpModal(){
     document.getElementById('visit-ctr-m')
   ].filter(Boolean);
   if(!els.length) return;
+  els.forEach(el=>{el.textContent='········';});
+
+  // localStorage alapú helyi számláló fallback
+  function localCount(){
+    try{
+      const k='vipach_opens';
+      const n=(parseInt(localStorage.getItem(k)||'0',10))+1;
+      localStorage.setItem(k,String(n));
+      return n;
+    }catch(e){return 0;}
+  }
+
   try{
     const r=await fetch('https://api.counterapi.dev/v1/vipach-studio/opens/up',{cache:'no-store'});
-    if(!r.ok) throw new Error('api error');
+    if(!r.ok) throw new Error('api error '+r.status);
     const d=await r.json();
-    const n=typeof d.count==='number'?d.count:parseInt(d.value||d.count||'1');
-    const val=String(n).padStart(8,'0');
-    els.forEach(el=>{el.textContent=val;el.classList.add('loaded');});
-  }catch(e){
-    els.forEach(el=>el.textContent='');
+    const n=typeof d.count==='number' ? d.count
+          : typeof d.value==='number' ? d.value
+          : parseInt(d.count||d.value||d.hits||'0',10)||0;
+    if(n>0){
+      const val=String(n).padStart(8,'0');
+      els.forEach(el=>{el.textContent=val;el.classList.add('loaded');});
+      return;
+    }
+  }catch(e){}
+
+  // API nem elérhető — helyi számláló
+  const local=localCount();
+  if(local>0){
+    els.forEach(el=>{el.textContent=String(local).padStart(8,'0');el.classList.add('loaded');});
+  } else {
+    els.forEach(el=>{el.textContent='········';});
   }
 })();
 // ── Live kamera frissítő helper ──
@@ -4900,33 +4968,38 @@ window.addEventListener('resize',()=>{
 
       <!-- PORTRAIT MODE -->
       <div class="help-section">
-        <div class="help-section-title">📸 Portré mód — mos el a hátteret mint egy profi!</div>
+        <div class="help-section-title">📸 Portré mód — mi ez és mikor érdemes használni?</div>
         <div class="help-step">
-          <div class="help-step-ico">🌟</div>
+          <div class="help-step-ico">🤔</div>
           <div class="help-step-txt">
-            <strong>Mi ez a PORTRÉ gomb a kameránál? ✨</strong>
-            <span>Látod a <b>PORTRÉ</b> feliratú gombot jobb felül a kamera nézetben? Ha rányomsz, az app <b>élőben elmossa a hátteret</b> — te meg éles maradsz! Olyan lesz, mint amikor a profi fotósok nagyon szép, elmosott hátterű portréképeket csinálnak! 📷</span>
-          </div>
-        </div>
-        <div class="help-step">
-          <div class="help-step-ico">🎚️</div>
-          <div class="help-step-txt">
-            <strong>Mennyire legyen elmosott? Neked szabad dönteni! 🎨</strong>
-            <span>A <b>BLUR</b> csúszkával állíthatod be, hogy mennyire mosódjon el a háttér — egy kicsit (álomszerű hatás), vagy nagyon (profi portré stúdió hatás). Próbálgasd, és nézd élőben az eredményt!</span>
+            <strong>Mi ez egyáltalán? 🌫️</strong>
+            <span>A PORTRÉ gomb olyan, mint egy varázslat! 🪄 Az app <b>megnézi a kamera képét</b>, megkeresi rajta az embert (vagy bármilyen előtéri dolgot), és az összes <b>mögöttes hátteret elmossa</b> — te meg éles, tiszta maradsz! Olyan lesz, mint a profi fotósoknál! 📷</span>
           </div>
         </div>
         <div class="help-step">
           <div class="help-step-ico">📱</div>
           <div class="help-step-txt">
-            <strong>Teljes képernyős nézetben is működik! 🖥️</strong>
-            <span>Ha a kamera nézetben a <b>⛶ teljes képernyő</b> gombra nyomsz, a kép kitölti az egész telefon képernyőjét. Ott is megtalálod a <b>portré gombot</b> — bal oldalt a nagy fehér exponáló gomb mellett! A <b>BLUR csúszka</b> is mindig ott van jobb felül — nem kell előtte normál nézetből bekapcsolni, közvetlenül a teljes képernyős nézetből is elindítható! 🎬</span>
+            <strong>De a telefonomban is van portré mód — mi a különbség? 🤳</strong>
+            <span>Nagyszerű kérdés! 😄 A telefon beépített portré módja a <b>hardveres kamerán</b> dolgozik — mielőtt a kép egyáltalán megérkezik az apphoz. Ha közel tartod a telefont és az arc közelében vagy, a telefon már elmossza a hátteret <b>mielőtt ez az app látná</b> — ekkor az app portré módja nem sokat tesz hozzá, mert a kamera már elvégezte a munkát!<br><br>
+            Az <b>app saját portré módja</b> viszont ilyenkor is hasznos:<br>
+            ✅ <b>Hátsó kamerával</b> — tárgyak, növények, csendélet fotóknál, ahol a telefon nem aktiválja automatikusan a portré módját<br>
+            ✅ <b>Böngészőben</b> (Chrome/Safari) — a beépített portré mód nem jut át a böngészőbe, a kamera sima képet küld az appnak → az app elvégzi a háttérelmosást<br>
+            ✅ <b>Szűrőkkel kombinálva</b> — az app szűrői (pl. Neo-Noir, Blade Runner) csak az előtérre hatnak, a háttér más marad — ilyenkor az app portré módja különleges hatást ad!<br>
+            ✅ <b>Régebbi telefonokon</b> ahol nincs beépített portré mód</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">🎚️</div>
+          <div class="help-step-txt">
+            <strong>Mennyire legyen elmosott? Te döntöd el! 🎨</strong>
+            <span>A <b>BLUR</b> csúszkával állíthatod — kicsit (álomszerű, lágy hatás) vagy nagyon (profi stúdió portré hatás). Próbálgasd, nézd élőben az eredményt!</span>
           </div>
         </div>
         <div class="help-step">
           <div class="help-step-ico">⚠️</div>
           <div class="help-step-txt">
-            <strong>Kell hozzá internet? És mi a hátránya? 🌐</strong>
-            <span>Az <b>első bekapcsoláshoz egyszer kell internet</b> — az app letölti a háttér-felismerő programot (~5MB). Utána már offline is működik! Gyengébb telefonokon kicsit lassabb lehet, és iOS Safari-n nem mindig elérhető. <b>Android Chrome-on a legjobb!</b> 🤖</span>
+            <strong>Kell hozzá internet? 🌐</strong>
+            <span>Az <b>első bekapcsoláshoz egyszer kell net</b> (~5MB letöltés). Utána offline is megy! Gyengébb telefonokon lassabb lehet. <b>Android Chrome-on a legjobb!</b> 🤖</span>
           </div>
         </div>
       </div>
@@ -5172,7 +5245,7 @@ window.addEventListener('resize',()=>{
 
       <div style="text-align:center;padding:10px 16px 6px;color:var(--text3);font-size:11px;line-height:1.6">
         VIPACH PhotoStudio v7.04 · Készült ❤️-tel<br>
-        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <span class="footer-team">Be Smart Kids Club csapata</span></span><br>
+        <span style="font-weight:600;color:#555"><span class="footer-by-alt">Fejlesztette</span>: <a href="https://www.magyariskola.at/event-details/be-smart-kids-club" target="_blank" rel="noopener" class="footer-team footer-team-link">Be Smart Kids Club csapata</a></span><br>
         Kérdés esetén írj ide: <a href="mailto:hello@norbertbanhalmi.com" style="color:var(--accent);text-decoration:none;font-weight:600">hello@norbertbanhalmi.com</a>
       </div>
 
