@@ -296,8 +296,66 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .chip:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
 .chip.active{border-color:var(--accent);background:var(--acl);color:var(--accent)}
 
-/* ── CAPTION ── */
-.cap-textarea{width:100%;background:var(--card2);border:1px solid var(--sep);border-radius:8px;color:var(--text);font-size:12px;padding:8px 10px;resize:none;outline:none;font-family:inherit;margin-bottom:8px;transition:border-color .15s}
+/* ── Szöveg szerkesztő — billentyűzet mód: floating mini preview ── */
+#text-kbd-bar{
+  display:none;
+  position:fixed;
+  top:0;left:0;right:0;
+  z-index:8800;
+  background:rgba(8,13,24,.97);
+  border-bottom:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:8px 12px 10px;
+  flex-direction:column;
+  gap:8px;
+  box-shadow:0 4px 24px rgba(0,0,0,.6);
+}
+#text-kbd-bar.visible{display:flex;}
+.text-kbd-preview{
+  display:flex;align-items:center;gap:10px;
+}
+.text-kbd-canvas-wrap{
+  flex-shrink:0;
+  width:80px;height:56px;
+  border-radius:7px;
+  overflow:hidden;
+  background:#000;
+  border:1px solid rgba(255,255,255,.1);
+  position:relative;
+}
+#text-kbd-canvas{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+}
+.text-kbd-sliders{
+  flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;
+}
+.text-kbd-row{
+  display:flex;align-items:center;gap:6px;
+}
+.text-kbd-lbl{
+  font-size:9px;font-weight:600;letter-spacing:.06em;
+  color:rgba(255,255,255,.45);text-transform:uppercase;
+  width:14px;flex-shrink:0;
+}
+.text-kbd-slider{
+  flex:1;-webkit-appearance:none;height:3px;border-radius:3px;
+  background:rgba(255,255,255,.15);outline:none;cursor:pointer;
+}
+.text-kbd-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:#fff;cursor:pointer;
+  box-shadow:0 0 0 3px rgba(201,168,76,.5),0 1px 4px rgba(0,0,0,.5);
+}
+.text-kbd-val{
+  font-size:10px;color:var(--accent);font-weight:600;
+  width:30px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;
+}
+.text-kbd-hint{
+  font-size:10px;color:rgba(255,255,255,.35);text-align:center;
+  letter-spacing:.02em;
+}width:100%;background:var(--card2);border:1px solid var(--sep);border-radius:8px;color:var(--text);font-size:12px;padding:8px 10px;resize:none;outline:none;font-family:inherit;margin-bottom:8px;transition:border-color .15s}
 .cap-textarea:focus{border-color:var(--accent)}
 .cap-textarea::placeholder{color:var(--text3)}
 .cap-row{display:flex;align-items:center;gap:6px;margin-bottom:7px}
@@ -328,8 +386,32 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .frame-btn.active{border-color:var(--accent);background:var(--acl);color:var(--accent)}
 .frame-ico{height:26px;display:flex;align-items:center;justify-content:center}
 
-/* ── CANVAS ── */
-.cwrap{position:relative;display:flex;align-items:center;justify-content:center}
+/* ── Kép törlése gomb ── */
+#img-delete-btn{
+  position:absolute;
+  top:10px;left:10px;
+  width:34px;height:34px;
+  border-radius:50%;
+  background:rgba(229,57,53,.82);
+  border:1.5px solid rgba(255,255,255,.25);
+  color:#fff;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  z-index:6;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:all .18s;
+  -webkit-tap-highlight-color:transparent;
+  opacity:0.7;
+}
+#img-delete-btn:hover,#img-delete-btn:active{
+  opacity:1;
+  transform:scale(1.08);
+  background:rgba(229,57,53,1);
+}
+/* Kamera live módban ne látszódjon */
+body.cam-active-mode #img-delete-btn{
+  display:none!important;
+}
 /* Mobil szerkesztő: kép teljesen látszódjon */
 /* Szerkesztő nézet: canvas reszponzív */
 body:not(.cam-active-mode) #preview{
@@ -365,9 +447,31 @@ body:not(.cam-active-mode) #preview{
 
 
 
-/* ── Mobil panel toggle ── */
-#m-panel-toggle{
+/* ── Mobil panel X gomb — fix, nem gördül ── */
+.mobile-panel-close-btn{
   display:none;
+}
+@media(max-width:768px){
+  .mobile-panel{position:relative;padding-top:44px!important;}
+  .mobile-panel-close-btn{
+    display:flex;
+    align-items:center;justify-content:center;
+    position:absolute;
+    top:8px;right:8px;
+    width:28px;height:28px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:50%;
+    cursor:pointer;
+    z-index:30;
+    color:rgba(255,255,255,.7);
+    font-size:14px;line-height:1;
+    flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+    transition:all .2s;
+    pointer-events:all;
+  }
+  .mobile-panel-close-btn:active{transform:scale(.9);color:#fff;}
 }
 @media(max-width:768px){
   /* Panel wrapper: position:relative a toggle gombhoz */
@@ -844,7 +948,11 @@ self.addEventListener('fetch',e=>{
     <div class="cwrap" id="cwrap" style="display:none">
       <canvas id="preview"></canvas>
       <div class="recindicator" id="recindicator"><div class="recdot"></div> <span id="recLbl">FELVÉTEL</span></div>
-
+      <button id="img-delete-btn" onclick="openDeleteModal()" title="Kép törlése">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,4 14,4"/><path d="M5 4V2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V4"/><path d="M6 7v5m4-5v5"/><path d="M3 4l1 9.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5L13 4"/>
+        </svg>
+      </button>
     </div>
     <div class="canvas-hint" id="canvas-hint"></div>
     <div id="cam-overlay">
@@ -893,6 +1001,7 @@ self.addEventListener('fetch',e=>{
 <!-- MOBILE BOTTOM TABS -->
 <div class="mobile-tab-bar" id="m-tabs"></div>
 <div class="mobile-panel" id="m-panel">
+  <button class="mobile-panel-close-btn" id="m-panel-close-btn" onclick="toggleMobilePanel()" title="Panel bezárása">✕</button>
   <button id="m-panel-toggle" onclick="toggleMobilePanel()" title="Panel bezárása/nyitása">
     <span id="m-panel-toggle-ico"></span>
   </button>
@@ -914,7 +1023,45 @@ self.addEventListener('fetch',e=>{
   </div>
 </footer>
 
+<!-- ════════ TEXT KEYBOARD PREVIEW BAR ════════ -->
+<div id="text-kbd-bar">
+  <div class="text-kbd-preview">
+    <div class="text-kbd-canvas-wrap">
+      <canvas id="text-kbd-canvas"></canvas>
+    </div>
+    <div class="text-kbd-sliders">
+      <div class="text-kbd-row">
+        <span class="text-kbd-lbl">X</span>
+        <input type="range" class="text-kbd-slider" id="text-kbd-x" min="0" max="100" value="50">
+        <span class="text-kbd-val" id="text-kbd-xv">50%</span>
+      </div>
+      <div class="text-kbd-row">
+        <span class="text-kbd-lbl">Y</span>
+        <input type="range" class="text-kbd-slider" id="text-kbd-y" min="0" max="100" value="50">
+        <span class="text-kbd-val" id="text-kbd-yv">50%</span>
+      </div>
+    </div>
+  </div>
+  <div class="text-kbd-hint" id="text-kbd-hint">← Húzd a csúszkával a felirat helyzetét →</div>
+</div>
+
 <div class="toast" id="toast"></div>
+
+<!-- ════════ DELETE CONFIRM MODAL ════════ -->
+<div id="delete-modal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px">
+  <div id="delete-card" style="background:#131D30;border-radius:18px;padding:28px 24px 24px;width:100%;max-width:340px;box-shadow:0 24px 80px rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.08);animation:deleteCardIn .22s cubic-bezier(.34,1.2,.64,1)">
+    <div style="font-size:36px;text-align:center;margin-bottom:14px">🗑️</div>
+    <div id="delete-modal-title" style="font-size:16px;font-weight:700;color:#F8F8FA;text-align:center;margin-bottom:10px;letter-spacing:.01em"></div>
+    <div id="delete-modal-msg" style="font-size:12px;color:rgba(255,255,255,.55);text-align:center;line-height:1.6;margin-bottom:24px"></div>
+    <div style="display:flex;gap:10px">
+      <button id="delete-no-btn" onclick="closeDeleteModal()" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'"></button>
+      <button id="delete-yes-btn" onclick="confirmDeleteImage()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e53935;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"></button>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes deleteCardIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+</style>
 <input type="file" id="fileinput" accept="image/*" style="display:none">
 
 <script>
@@ -958,6 +1105,8 @@ const STRINGS = {
     emptyTitle:'Tölts fel egy képet', emptySub:'Húzd ide, vagy kattints a panelre',
     imgFsHint:'Csippentés / görgetés = zoom · Húzás = mozgatás',
     camOrientWarn:'Forgasd vissza az eszközt álló helyzetbe', camOrientSub:'A kamera mód csak portré nézetben elérhető',
+    deleteImg:'Kép törlése', deleteConfirmTitle:'Biztosan törlöd?', deleteConfirmMsg:'A szerkesztett kép törlődik a memóriából, és a kamera újraindul. Ez nem vonható vissza.', deleteConfirmYes:'Igen, törlöm', deleteConfirmNo:'Mégsem', deleteToast:'🗑️ Kép törölve — kamera kész!',
+    kbdPosHint:'← Csúszka: felirat helyzete a képen →',
   },
   en:{
     tabImage:'Photo', tabFilters:'Filters', tabAdjust:'Adjust', tabFrame:'Frame', tabText:'Text', tabMotion:'Motion', tabCamera:'Camera',
@@ -993,6 +1142,8 @@ const STRINGS = {
     emptyTitle:'Upload an image', emptySub:'Drop here or click the panel',
     imgFsHint:'Pinch / scroll = zoom · Drag = pan',
     camOrientWarn:'Please rotate your device to portrait', camOrientSub:'Camera mode is only available in portrait view',
+    deleteImg:'Delete image', deleteConfirmTitle:'Delete this photo?', deleteConfirmMsg:'The edited image will be cleared from memory and the camera will restart. This cannot be undone.', deleteConfirmYes:'Yes, delete', deleteConfirmNo:'Cancel', deleteToast:'🗑️ Image deleted — camera ready!',
+    kbdPosHint:'← Slider: position the caption on the image →',
   },
   de:{
     tabImage:'Foto', tabFilters:'Filter', tabAdjust:'Anpassen', tabFrame:'Rahmen', tabText:'Text', tabMotion:'Bewegung', tabCamera:'Kamera',
@@ -1028,6 +1179,8 @@ const STRINGS = {
     emptyTitle:'Bild hochladen', emptySub:'Hierher ziehen oder Panel klicken',
     imgFsHint:'Pinch / Scrollen = Zoom · Ziehen = Verschieben',
     camOrientWarn:'Bitte drehe dein Gerät ins Hochformat', camOrientSub:'Der Kamera-Modus ist nur im Hochformat verfügbar',
+    deleteImg:'Bild löschen', deleteConfirmTitle:'Foto wirklich löschen?', deleteConfirmMsg:'Das bearbeitete Bild wird aus dem Speicher gelöscht und die Kamera wird neu gestartet. Dies kann nicht rückgängig gemacht werden.', deleteConfirmYes:'Ja, löschen', deleteConfirmNo:'Abbrechen', deleteToast:'🗑️ Bild gelöscht — Kamera bereit!',
+    kbdPosHint:'← Schieberegler: Position der Beschriftung →',
   }
 };
 
@@ -1063,7 +1216,8 @@ function switchLang(l){
   switchTab(activeTab);
   // Súgó modal újraépítése
   buildHelpModal();
-  // Súgó modal fejléce
+  // Delete modal (ha nyitva van, frissítjük a szövegeit)
+  if(document.getElementById('delete-modal').style.display==='flex') openDeleteModal();
   // Orientáció hint szöveg frissítése
   const oh=document.getElementById('cam-orient-hint-txt');
   if(oh) oh.innerHTML='💡 ' + (lang==='en' ? 'If you haven\'t already, enable the <strong>rotation lock</strong> in your phone\'s control center!' : lang==='de' ? 'Falls noch nicht geschehen, aktiviere die <strong>Rotationssperre</strong> im Kontrollzentrum deines Telefons!' : 'Ha még nem tetted meg, kapcsold be az <strong>elforgatás-zárat</strong> a telefon vezérlőközpontjában!');
@@ -2593,7 +2747,19 @@ function buildPanel_Text(container){
   const sec=mkSec(T('secCap'),container);
 
   const ta=document.createElement('textarea');ta.className='cap-textarea';ta.rows=2;ta.placeholder=T('captionPh');ta.value=cap.text;
-  ta.addEventListener('input',e=>{cap.text=e.target.value;frameOrCam();});
+  ta.addEventListener('input',e=>{cap.text=e.target.value;frameOrCam();renderTextKbdCanvas();});
+
+  // Billentyűzet megjelenik → floating bar mutatása
+  ta.addEventListener('focus',()=>{
+    if(window.innerWidth<=768){
+      showTextKbdBar();
+    }
+  });
+  ta.addEventListener('blur',()=>{
+    // Kis késleltetés — ha csúszkára kattint, ne tűnjön el rögtön
+    setTimeout(hideTextKbdBar, 200);
+  });
+
   sec.appendChild(ta);
 
   // Font grid with category headers
@@ -2708,17 +2874,15 @@ function buildPanel_Motion(container){
 // ══════════════════════════════════════════
 function buildPanel(tabId, container){
   container.innerHTML='';
-  // Mobilon: X gomb a panel bezárásához
-  if(window.innerWidth<=768){
-    const closeRow=document.createElement('div');
-    closeRow.style.cssText='display:flex;justify-content:flex-end;padding:2px 2px 4px;';
+  // A fix ✕ gomb visszaállítása (innerHTML törölte)
+  if(container.id==='m-panel'){
     const closeBtn=document.createElement('button');
-    closeBtn.style.cssText='background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:14px;line-height:1;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all .2s;';
-    closeBtn.innerHTML='✕';
+    closeBtn.className='mobile-panel-close-btn';
+    closeBtn.id='m-panel-close-btn';
+    closeBtn.setAttribute('onclick','toggleMobilePanel()');
     closeBtn.title='Panel bezárása';
-    closeBtn.addEventListener('click',()=>toggleMobilePanel());
-    closeRow.appendChild(closeBtn);
-    container.appendChild(closeRow);
+    closeBtn.textContent='✕';
+    container.appendChild(closeBtn);
   }
   switch(tabId){
     case 'image':   buildPanel_Image(container);   break;
@@ -3052,34 +3216,53 @@ async function dlBlob(blob,name){
       }
     }catch(e){ /* cancelled or unsupported — fall through */ }
     // iOS Safari fallback: data URL új tabban
-    const reader=new FileReader();
-    reader.onload=ev=>{
+    const reader2=new FileReader();
+    reader2.onload=ev=>{
       const win=window.open('','_blank');
       if(win){
         win.document.write(`<html><body style="margin:0;background:#111;text-align:center"><img src="${ev.target.result}" style="max-width:100%;display:block;margin:0 auto"><p style="color:#fff;font-family:sans-serif;padding:12px;font-size:14px">Tartsd nyomva a képet → Kép mentése / Save Image</p></body></html>`);
         win.document.close();
       }
     };
-    reader.readAsDataURL(blob);
+    reader2.readAsDataURL(blob);
     return;
   }
 
-  // Android (beleértve Xiaomi MIUI), Desktop Chrome/Firefox/Edge:
-  // <a download> a legmegbízhatóbb módszer
-  const url=URL.createObjectURL(blob);
-  try{
+  // Android + Desktop: legjobb módszer = data URL alapú <a download>
+  // A blob URL-t előbb data URL-lé alakítjuk — ez minden Android böngészőben működik
+  // (a közvetlen blob URL-t egyes MIUI/Samsung böngészők blokkolják)
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const dataUrl=ev.target.result;
+    try{
+      const a=document.createElement('a');
+      a.href=dataUrl;
+      a.download=name;
+      a.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
+      document.body.appendChild(a);
+      // dispatchEvent megbízhatóbb mint a sima .click() egyes böngészőkben
+      a.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+      setTimeout(()=>{ try{document.body.removeChild(a);}catch(x){} },2000);
+    }catch(e){
+      // Utolsó fallback: új tab data URL-lel
+      const win=window.open('','_blank');
+      if(win){
+        win.document.write(`<html><body style="margin:0;background:#111;text-align:center"><img src="${dataUrl}" style="max-width:100%;display:block;margin:0 auto"><p style="color:#fff;font-family:sans-serif;padding:12px;font-size:14px">Tartsd nyomva a képet → Kép mentése</p></body></html>`);
+        win.document.close();
+      }
+    }
+  };
+  reader.onerror=()=>{
+    // Ha a FileReader sem megy, próbáljuk blob URL-lel
+    const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;
-    a.download=name;
+    a.href=url;a.download=name;
     a.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
     document.body.appendChild(a);
     a.click();
     setTimeout(()=>{ try{document.body.removeChild(a);}catch(x){} URL.revokeObjectURL(url); },3000);
-  }catch(e){
-    // Végső fallback: tab megnyitás
-    window.open(url,'_blank');
-    setTimeout(()=>URL.revokeObjectURL(url),8000);
-  }
+  };
+  reader.readAsDataURL(blob);
 }
 
 function toggleRec(){if(recording)stopRec();else startRec();}
@@ -3462,12 +3645,132 @@ function showFsOrientHint(){
 
 
 // ── Mobil panel összecsukás ──
+// ══════════════════════════════════════════
+// TEXT KEYBOARD PREVIEW BAR
+// ══════════════════════════════════════════
+let _textKbdVisible=false;
+
+function renderTextKbdCanvas(){
+  if(!_textKbdVisible||!origImg) return;
+  const kc=document.getElementById('text-kbd-canvas');
+  if(!kc) return;
+  const wrap=kc.parentElement;
+  const w=wrap.clientWidth||80;
+  const h=wrap.clientHeight||56;
+  kc.width=w;kc.height=h;
+  const kctx=kc.getContext('2d');
+  // Szűrt kép kis méretben
+  const filtered=getFilteredCanvas(w,h);
+  kctx.drawImage(filtered,0,0,w,h);
+  // Felirat rárajzolása
+  drawCaption(kctx,w,h);
+}
+
+function showTextKbdBar(){
+  _textKbdVisible=true;
+  const bar=document.getElementById('text-kbd-bar');
+  if(!bar) return;
+  // Csúszkák szinkronizálása
+  const kx=document.getElementById('text-kbd-x');
+  const ky=document.getElementById('text-kbd-y');
+  const kxv=document.getElementById('text-kbd-xv');
+  const kyv=document.getElementById('text-kbd-yv');
+  if(kx){kx.value=Math.round(cap.x);kxv.textContent=Math.round(cap.x)+'%';}
+  if(ky){ky.value=Math.round(cap.y);kyv.textContent=Math.round(cap.y)+'%';}
+  // Hint szöveg nyelvnek megfelelően
+  const hint=document.getElementById('text-kbd-hint');
+  if(hint) hint.textContent=T('kbdPosHint')||'← Csúszka: felirat helyzete →';
+  bar.classList.add('visible');
+  renderTextKbdCanvas();
+}
+
+function hideTextKbdBar(){
+  _textKbdVisible=false;
+  const bar=document.getElementById('text-kbd-bar');
+  if(bar) bar.classList.remove('visible');
+}
+
+// Csúszkák eseményei (egyszer kötjük, nem buildPanel-ben)
+(function initTextKbdSliders(){
+  function _bind(){
+    const kx=document.getElementById('text-kbd-x');
+    const ky=document.getElementById('text-kbd-y');
+    if(!kx||!ky||kx._bound) return;
+    kx._bound=true;
+    kx.addEventListener('input',e=>{
+      cap.x=parseFloat(e.target.value);
+      document.getElementById('text-kbd-xv').textContent=Math.round(cap.x)+'%';
+      // Sync main panel sliders
+      document.querySelectorAll('#cap-x').forEach(el=>el.value=Math.round(cap.x));
+      document.querySelectorAll('#cap-x-val').forEach(el=>el.textContent=Math.round(cap.x)+'%');
+      frameOrCam();renderTextKbdCanvas();
+    });
+    // Csúszka érintésekor ne zárjuk be a bart
+    kx.addEventListener('touchstart',()=>{_textKbdVisible=true;},{ passive:true });
+    ky.addEventListener('input',e=>{
+      cap.y=parseFloat(e.target.value);
+      document.getElementById('text-kbd-yv').textContent=Math.round(cap.y)+'%';
+      document.querySelectorAll('#cap-y').forEach(el=>el.value=Math.round(cap.y));
+      document.querySelectorAll('#cap-y-val').forEach(el=>el.textContent=Math.round(cap.y)+'%');
+      frameOrCam();renderTextKbdCanvas();
+    });
+    ky.addEventListener('touchstart',()=>{_textKbdVisible=true;},{ passive:true });
+  }
+  // DOM ready után kötjük
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',_bind);
+  } else {
+    setTimeout(_bind,100);
+  }
+})();
+
 function toggleMobilePanel(){
   document.body.classList.toggle('panel-collapsed');
   // carea méret újraszámítás
   if(camActive) camLastFrame=0;
   else if(origImg) draw();
 }
+
+// ══════════════════════════════════════════
+// DELETE IMAGE
+// ══════════════════════════════════════════
+function openDeleteModal(){
+  const modal=document.getElementById('delete-modal');
+  document.getElementById('delete-modal-title').textContent=T('deleteConfirmTitle');
+  document.getElementById('delete-modal-msg').textContent=T('deleteConfirmMsg');
+  document.getElementById('delete-yes-btn').textContent=T('deleteConfirmYes');
+  document.getElementById('delete-no-btn').textContent=T('deleteConfirmNo');
+  modal.style.display='flex';
+}
+function closeDeleteModal(){
+  document.getElementById('delete-modal').style.display='none';
+}
+function confirmDeleteImage(){
+  closeDeleteModal();
+  // Kép és állapot törlése
+  origImg=null;
+  _thumbSrc=null;
+  _imgMetaStr='';
+  cropX=0.5;cropY=0.5;cropZoom=1.0;
+  clearFilterCache();
+  // Canvas és UI reset
+  const canvas=document.getElementById('preview');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  document.getElementById('cwrap').style.display='none';
+  document.getElementById('emptystate').style.display='flex';
+  document.getElementById('btnDL').disabled=true;
+  document.getElementById('btnRec').disabled=true;
+  document.body.classList.remove('panel-collapsed');
+  // Kamera újraindítása
+  if(camActive) camStop();
+  setTimeout(()=>camStart(),300);
+  toast(T('deleteToast'),2800);
+}
+// Modalt Escape-pel is be lehet zárni
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDeleteModal();});
+// Modalt a háttérre kattintva is be lehet zárni
+document.getElementById('delete-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDeleteModal();});
 function camLoop(ts){
   if(!camActive)return;
   camAnimId=requestAnimationFrame(camLoop);
@@ -3800,17 +4103,46 @@ const _helpBodyHU = `
           </div>
         </div>
         <div class="help-step">
-          <div class="help-step-ico">⬇️</div>
-          <div class="help-step-txt">
-            <strong>Kép letöltése — csak elmented! 📁</strong>
-            <span>A <b>Kép letöltése</b> opcióval a szerkesztett fotó a <b>legjobb minőségben</b> kerül az eszközödre. 📱 <b>Android (Xiaomi/Samsung/stb.)</b>: a kép automatikusan a Letöltések mappába kerül — nézd a felső értesítési sávot! 🍎 <b>iPhone (Safari)</b>: egy megosztás ablak nyílik — válaszd a "Fotókba mentés" opciót. 💻 <b>Számítógépen</b>: a szokásos letöltési mappába kerül.</span>
-          </div>
-        </div>
-        <div class="help-step">
           <div class="help-step-ico">💙</div>
           <div class="help-step-txt">
             <strong>Megosztás a VIPACH csoportban! 🎉</strong>
             <span>A fejlécben a <b>Mentés ▾</b> gombra kattintva válaszd a <b>Megosztás a VIPACH csoportban</b> opciót — a kép automatikusan letöltődik, majd <b>egyből megnyílik a VIPACH Facebook csoport</b>! Ott már csak fel kell töltened a képet, és máris látja az egész közösség! 🙌</span>
+          </div>
+        </div>
+      </div>
+      <!-- DEVICE SAVING GUIDE -->
+      <div class="help-section">
+        <div class="help-section-title">&#128242; K&#233;p ment&#233;se eszk&#246;z&#246;nk&#233;nt</div>
+        <div class="help-step">
+          <div class="help-step-ico">&#129302;</div>
+          <div class="help-step-txt">
+            <strong>Android &mdash; Chrome b&#246;ng&#233;sz&#337; &#9989;</strong>
+            <span>Nyomd meg a <b>Ment&#233;s &#9662; &rarr; K&#233;p let&#246;lt&#233;se</b> gombot. A k&#233;p automatikusan a <b>Let&#246;lt&#233;sek mapp&#225;ba</b> ker&#252;l. N&#233;zd a fels&#337; <b>&#233;rtes&#237;t&#233;si s&#225;vot</b> &mdash; ott jelenik meg a let&#246;lt&#246;tt f&#225;jl. Gal&#233;ri&#225;ban a <b>Let&#246;lt&#233;sek</b> albumban tal&#225;lod.</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">&#128241;</div>
+          <div class="help-step-txt">
+            <strong>Android &mdash; Xiaomi / MIUI b&#246;ng&#233;sz&#337; &#9888;&#65039;</strong>
+            <span>A be&#233;p&#237;tett MIUI b&#246;ng&#233;sz&#337; n&#233;ha blokkol letolt&#233;st. <b>Megold&#225;s:</b> nyisd meg az appot <b>Chrome b&#246;ng&#233;sz&#337;ben</b> &mdash; ott t&#246;k&#233;letesen m&#369;k&#246;dik! Ha m&#233;gis MIUI-t haszn&#225;lsz &#233;s nem t&#246;lt le, tartsd <b>hosszan nyomva a k&#233;pet</b> a k&#233;perny&#337;n &rarr; v&#225;laszd a <b>&#8222;K&#233;p ment&#233;se&#8221;</b> opci&#243;t.</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">&#127822;</div>
+          <div class="help-step-txt">
+            <strong>iPhone / iPad &mdash; Safari &#127823;</strong>
+            <span>Az Apple biztons&#225;gi szab&#225;lyai miatt a web nem tud k&#246;zvetlen&#252;l a Fot&#243;k appba menteni. <b>L&#233;p&#233;sek:</b><br>
+            1&#65039;&#8419; Nyomd meg <b>Ment&#233;s &#9662; &rarr; K&#233;p let&#246;lt&#233;se</b> &mdash; megjelenik a megoszt&#243; men&#252;<br>
+            2&#65039;&#8419; V&#225;laszd a <b>&#8222;Fot&#243;kba ment&#233;s&#8221;</b> opci&#243;t<br>
+            3&#65039;&#8419; Ha nem jelenik meg: tartsd <b>hosszan nyomva a k&#233;pet</b> a k&#233;perny&#337;n &rarr; <b>&#8222;K&#233;p ment&#233;se&#8221;</b><br>
+            &#128193; A k&#233;p a <b>F&#225;jlok &rarr; Let&#246;lt&#233;sek</b> mapp&#225;ban vagy a <b>Fot&#243;k</b> appban jelenik meg.</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">&#128187;</div>
+          <div class="help-step-txt">
+            <strong>Sz&#225;m&#237;t&#243;g&#233;p &mdash; Chrome / Firefox / Edge &#9989;</strong>
+            <span>Nyomd meg a <b>Ment&#233;s &#9662; &rarr; K&#233;p let&#246;lt&#233;se</b> gombot. A k&#233;p automatikusan a <b>Let&#246;lt&#233;sek mapp&#225;ba</b> ker&#252;l. A b&#246;ng&#233;sz&#337; alj&#225;n vagy &#233;rtes&#237;t&#233;sben jelzi a let&#246;lt&#233;st.</span>
           </div>
         </div>
       </div>
@@ -4065,13 +4397,32 @@ const HELP_CONTENT = {
         <strong>Save ▾ button — in the header! 🏆</strong>
         <span>When done, press <b>Save ▾</b> in the header — a small menu opens with two options!</span>
       </div></div>
-      <div class="help-step"><div class="help-step-ico">⬇️</div><div class="help-step-txt">
-        <strong>Download image! 📁</strong>
-        <span><b>Download image</b> saves your photo in the best quality. 📱 <b>Android (Xiaomi/Samsung/etc.)</b>: the image goes to your Downloads folder — check the notification bar! 🍎 <b>iPhone (Safari)</b>: a share sheet opens — tap "Save to Photos". 💻 <b>Desktop</b>: saves to your usual Downloads folder. The EXIF shows <b>VIPACH PHOTOSTUDIO</b> as creator! 🌟</span>
-      </div></div>
       <div class="help-step"><div class="help-step-ico">💙</div><div class="help-step-txt">
         <strong>Share in the VIPACH group! 🎉</strong>
         <span>Tap <b>Save ▾</b> in the header and choose <b>Share in VIPACH group</b> — the photo downloads automatically, then the <b>VIPACH Facebook group opens</b>! Upload it there and the whole community sees it! 🙌</span>
+      </div></div>
+    </div>
+    <div class="help-section">
+      <div class="help-section-title">&#128242; How to save the image on each device</div>
+      <div class="help-step"><div class="help-step-ico">&#129302;</div><div class="help-step-txt">
+        <strong>Android &mdash; Chrome browser &#9989;</strong>
+        <span>Tap <b>Save &#9662; &rarr; Download image</b>. The photo goes directly to your <b>Downloads folder</b>. Check the <b>notification bar</b> at the top &mdash; the file appears there. Find it in your Gallery under <b>Downloads</b>.</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">&#128241;</div><div class="help-step-txt">
+        <strong>Android &mdash; Xiaomi / MIUI browser &#9888;&#65039;</strong>
+        <span>The built-in MIUI browser may block downloads. <b>Solution:</b> open the app in <b>Chrome</b> &mdash; it works perfectly there! If download still fails: <b>long-press the image</b> on screen and choose <b>&ldquo;Save image&rdquo;</b>.</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">&#127822;</div><div class="help-step-txt">
+        <strong>iPhone / iPad &mdash; Safari &#127823;</strong>
+        <span>Due to Apple&rsquo;s security rules, websites cannot save directly to the Photos app. <b>Steps:</b><br>
+        1&#65039;&#8419; Tap <b>Save &#9662; &rarr; Download image</b> &mdash; a share sheet appears<br>
+        2&#65039;&#8419; Choose <b>&ldquo;Save to Photos&rdquo;</b><br>
+        3&#65039;&#8419; If missing: <b>long-press the image</b> on screen &rarr; <b>&ldquo;Save to Photos&rdquo;</b><br>
+        &#128193; The image also appears in <b>Files &rarr; Downloads</b>.</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">&#128187;</div><div class="help-step-txt">
+        <strong>Desktop &mdash; Chrome / Firefox / Edge &#9989;</strong>
+        <span>Tap <b>Save &#9662; &rarr; Download image</b>. The photo saves automatically to your <b>Downloads folder</b>. The browser shows it at the bottom or as a notification.</span>
       </div></div>
     </div>
 
@@ -4223,13 +4574,32 @@ const HELP_CONTENT = {
         <strong>Speichern ▾ Button — in der Kopfzeile! 🏆</strong>
         <span>Wenn fertig, drücke <b>Speichern ▾</b> in der Kopfzeile — ein kleines Menü öffnet sich mit zwei Optionen!</span>
       </div></div>
-      <div class="help-step"><div class="help-step-ico">⬇️</div><div class="help-step-txt">
-        <strong>Bild herunterladen! 📁</strong>
-        <span><b>Bild herunterladen</b> speichert dein Foto in bester Qualität. 📱 <b>Android (Xiaomi/Samsung/etc.)</b>: das Bild landet im Downloads-Ordner — sieh in der Benachrichtigungsleiste nach! 🍎 <b>iPhone (Safari)</b>: ein Teilen-Menü öffnet sich — wähle "In Fotos sichern". 💻 <b>Desktop</b>: wird in deinen Downloads-Ordner gespeichert. Die EXIF-Daten zeigen <b>VIPACH PHOTOSTUDIO</b> als Ersteller! 🌟</span>
-      </div></div>
       <div class="help-step"><div class="help-step-ico">💙</div><div class="help-step-txt">
         <strong>In der VIPACH-Gruppe teilen! 🎉</strong>
         <span>Tippe auf <b>Speichern ▾</b> in der Kopfzeile und wähle <b>In VIPACH-Gruppe teilen</b> — das Foto wird automatisch heruntergeladen, dann öffnet sich die <b>VIPACH Facebook-Gruppe</b>! 🙌</span>
+      </div></div>
+    </div>
+    <div class="help-section">
+      <div class="help-section-title">&#128242; Bild speichern &mdash; ger&#228;teabh&#228;ngig</div>
+      <div class="help-step"><div class="help-step-ico">&#129302;</div><div class="help-step-txt">
+        <strong>Android &mdash; Chrome-Browser &#9989;</strong>
+        <span>Tippe auf <b>Speichern &#9662; &rarr; Bild herunterladen</b>. Das Foto landet automatisch im <b>Downloads-Ordner</b>. Sieh in der <b>Benachrichtigungsleiste</b> nach &mdash; dort erscheint die Datei. In der Galerie findest du es unter <b>Downloads</b>.</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">&#128241;</div><div class="help-step-txt">
+        <strong>Android &mdash; Xiaomi / MIUI-Browser &#9888;&#65039;</strong>
+        <span>Der eingebaute MIUI-Browser kann Downloads blockieren. <b>L&#246;sung:</b> &#246;ffne die App in <b>Chrome</b> &mdash; dort klappt alles perfekt! Falls der Download trotzdem nicht klappt: <b>halte das Bild lang gedr&#252;ckt</b> &rarr; w&#228;hle <b>&bdquo;Bild speichern&ldquo;</b>.</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">&#127822;</div><div class="help-step-txt">
+        <strong>iPhone / iPad &mdash; Safari &#127823;</strong>
+        <span>Wegen Apples Sicherheitsregeln kann eine Webseite nicht direkt in die Fotos-App speichern. <b>Schritte:</b><br>
+        1&#65039;&#8419; Tippe auf <b>Speichern &#9662; &rarr; Bild herunterladen</b> &mdash; das Teilen-Men&#252; &#246;ffnet sich<br>
+        2&#65039;&#8419; W&#228;hle <b>&bdquo;In Fotos sichern&ldquo;</b><br>
+        3&#65039;&#8419; Falls die Option fehlt: <b>halte das Bild lang gedr&#252;ckt</b> &rarr; <b>&bdquo;Bild sichern&ldquo;</b><br>
+        &#128193; Das Bild erscheint auch in <b>Dateien &rarr; Downloads</b>.</span>
+      </div></div>
+      <div class="help-step"><div class="help-step-ico">&#128187;</div><div class="help-step-txt">
+        <strong>Desktop &mdash; Chrome / Firefox / Edge &#9989;</strong>
+        <span>Tippe auf <b>Speichern &#9662; &rarr; Bild herunterladen</b>. Das Foto wird automatisch in deinen <b>Downloads-Ordner</b> gespeichert. Der Browser zeigt den Download unten oder als Benachrichtigung.</span>
       </div></div>
     </div>
 
@@ -4544,17 +4914,46 @@ window.addEventListener('resize',()=>{
           </div>
         </div>
         <div class="help-step">
-          <div class="help-step-ico">⬇️</div>
-          <div class="help-step-txt">
-            <strong>Kép letöltése — csak elmented! 📁</strong>
-            <span>A <b>Kép letöltése</b> opcióval a szerkesztett fotó a <b>legjobb minőségben</b> kerül az eszközödre. 📱 <b>Android (Xiaomi/Samsung/stb.)</b>: a kép automatikusan a Letöltések mappába kerül — nézd a felső értesítési sávot! 🍎 <b>iPhone (Safari)</b>: egy megosztás ablak nyílik — válaszd a "Fotókba mentés" opciót. 💻 <b>Számítógépen</b>: a szokásos letöltési mappába kerül.</span>
-          </div>
-        </div>
-        <div class="help-step">
           <div class="help-step-ico">💙</div>
           <div class="help-step-txt">
             <strong>Megosztás a VIPACH csoportban! 🎉</strong>
             <span>A fejlécben a <b>Mentés ▾</b> gombra kattintva válaszd a <b>Megosztás a VIPACH csoportban</b> opciót — a kép automatikusan letöltődik, majd <b>egyből megnyílik a VIPACH Facebook csoport</b>! Ott már csak fel kell töltened a képet, és máris látja az egész közösség! 🙌</span>
+          </div>
+        </div>
+      </div>
+      <!-- DEVICE SAVING GUIDE -->
+      <div class="help-section">
+        <div class="help-section-title">&#128242; K&#233;p ment&#233;se eszk&#246;z&#246;nk&#233;nt</div>
+        <div class="help-step">
+          <div class="help-step-ico">&#129302;</div>
+          <div class="help-step-txt">
+            <strong>Android &mdash; Chrome b&#246;ng&#233;sz&#337; &#9989;</strong>
+            <span>Nyomd meg a <b>Ment&#233;s &#9662; &rarr; K&#233;p let&#246;lt&#233;se</b> gombot. A k&#233;p automatikusan a <b>Let&#246;lt&#233;sek mapp&#225;ba</b> ker&#252;l. N&#233;zd a fels&#337; <b>&#233;rtes&#237;t&#233;si s&#225;vot</b> &mdash; ott jelenik meg a let&#246;lt&#246;tt f&#225;jl. Gal&#233;ri&#225;ban a <b>Let&#246;lt&#233;sek</b> albumban tal&#225;lod.</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">&#128241;</div>
+          <div class="help-step-txt">
+            <strong>Android &mdash; Xiaomi / MIUI b&#246;ng&#233;sz&#337; &#9888;&#65039;</strong>
+            <span>A be&#233;p&#237;tett MIUI b&#246;ng&#233;sz&#337; n&#233;ha blokkol letolt&#233;st. <b>Megold&#225;s:</b> nyisd meg az appot <b>Chrome b&#246;ng&#233;sz&#337;ben</b> &mdash; ott t&#246;k&#233;letesen m&#369;k&#246;dik! Ha m&#233;gis MIUI-t haszn&#225;lsz &#233;s nem t&#246;lt le, tartsd <b>hosszan nyomva a k&#233;pet</b> a k&#233;perny&#337;n &rarr; v&#225;laszd a <b>&#8222;K&#233;p ment&#233;se&#8221;</b> opci&#243;t.</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">&#127822;</div>
+          <div class="help-step-txt">
+            <strong>iPhone / iPad &mdash; Safari &#127823;</strong>
+            <span>Az Apple biztons&#225;gi szab&#225;lyai miatt a web nem tud k&#246;zvetlen&#252;l a Fot&#243;k appba menteni. <b>L&#233;p&#233;sek:</b><br>
+            1&#65039;&#8419; Nyomd meg <b>Ment&#233;s &#9662; &rarr; K&#233;p let&#246;lt&#233;se</b> &mdash; megjelenik a megoszt&#243; men&#252;<br>
+            2&#65039;&#8419; V&#225;laszd a <b>&#8222;Fot&#243;kba ment&#233;s&#8221;</b> opci&#243;t<br>
+            3&#65039;&#8419; Ha nem jelenik meg: tartsd <b>hosszan nyomva a k&#233;pet</b> a k&#233;perny&#337;n &rarr; <b>&#8222;K&#233;p ment&#233;se&#8221;</b><br>
+            &#128193; A k&#233;p a <b>F&#225;jlok &rarr; Let&#246;lt&#233;sek</b> mapp&#225;ban vagy a <b>Fot&#243;k</b> appban jelenik meg.</span>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-step-ico">&#128187;</div>
+          <div class="help-step-txt">
+            <strong>Sz&#225;m&#237;t&#243;g&#233;p &mdash; Chrome / Firefox / Edge &#9989;</strong>
+            <span>Nyomd meg a <b>Ment&#233;s &#9662; &rarr; K&#233;p let&#246;lt&#233;se</b> gombot. A k&#233;p automatikusan a <b>Let&#246;lt&#233;sek mapp&#225;ba</b> ker&#252;l. A b&#246;ng&#233;sz&#337; alj&#225;n vagy &#233;rtes&#237;t&#233;sben jelzi a let&#246;lt&#233;st.</span>
           </div>
         </div>
       </div>
