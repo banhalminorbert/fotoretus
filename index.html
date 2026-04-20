@@ -157,7 +157,21 @@ body.portrait-active #cam-portrait-ctrl-btn{
   background:rgba(201,168,76,.3)!important;
   border-color:#C9A84C!important;
   color:#C9A84C!important;
-}background:rgba(8,13,24,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06);padding:0 20px;height:var(--hdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px;z-index:10;position:sticky;top:0}
+}
+
+/* ── HEADER ── */
+.hdr{
+  background:rgba(8,13,24,.97);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  padding:0 14px;
+  height:var(--hdr);
+  display:flex;align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;gap:8px;
+  z-index:10;position:sticky;top:0;
+  flex-wrap:nowrap;overflow:hidden;
+}
 .logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .logo-text{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
 .logo-badge{font-size:8px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:3px;padding:2px 5px;align-self:flex-start;margin-top:1px}
@@ -491,31 +505,38 @@ body:not(.cam-active-mode) #preview{
 
 
 
-/* ── Mobil panel X gomb — fix, nem gördül ── */
+/* ── Mobil panel X gomb — FIXED, soha nem gördül ── */
 .mobile-panel-close-btn{
   display:none;
 }
 @media(max-width:768px){
-  .mobile-panel{position:relative;padding-top:44px!important;}
+  /* Panel padding hogy a tartalom ne menjen a gomb alá */
+  .mobile-panel{padding-top:42px!important;}
   .mobile-panel-close-btn{
     display:flex;
     align-items:center;justify-content:center;
-    position:absolute;
-    top:8px;right:8px;
-    width:28px;height:28px;
-    background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.18);
+    position:fixed;
+    /* A tab-bar magassága ~50px, a panel felette van — a gomb a panel tetejére kerül */
+    bottom:calc(50px + env(safe-area-inset-bottom, 0px) + 8px);
+    right:10px;
+    width:30px;height:30px;
+    background:rgba(14,21,37,.95);
+    border:1px solid rgba(255,255,255,.2);
     border-radius:50%;
     cursor:pointer;
-    z-index:30;
-    color:rgba(255,255,255,.7);
-    font-size:14px;line-height:1;
+    z-index:200;
+    color:rgba(255,255,255,.75);
+    font-size:13px;line-height:1;
     flex-shrink:0;
     -webkit-tap-highlight-color:transparent;
-    transition:all .2s;
+    transition:all .18s;
+    box-shadow:0 2px 12px rgba(0,0,0,.5);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     pointer-events:all;
   }
-  .mobile-panel-close-btn:active{transform:scale(.9);color:#fff;}
+  .mobile-panel-close-btn:active{transform:scale(.88);color:#fff;background:rgba(201,168,76,.25);border-color:var(--accent);}
+  /* Panel összecsukva: X gomb rejtett */
+  body.panel-collapsed .mobile-panel-close-btn{display:none!important;}
 }
 @media(max-width:768px){
   /* Panel wrapper: position:relative a toggle gombhoz */
@@ -775,12 +796,29 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   .mtab.active .mtab-ico{opacity:1}
   .mobile-panel{order:2;flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;gap:0;padding:8px;-webkit-overflow-scrolling:touch;min-height:0}
   #m-footer{display:flex;order:4;padding:10px 14px 12px}
-  .hdr{padding:0 10px}
+  .hdr{
+    padding:0 10px;
+    height:var(--hdr);
+    gap:6px;
+  }
+  /* Mobilon: logo kompakt, minden egy sorban */
+  .logo{gap:5px;}
   .logo-text-full{display:none}
+  /* hdr-right: tömörebb */
+  .hdr-right{gap:5px;flex-shrink:0;}
+  /* Lang selector: kisebb mobilon */
+  .lang-btn{font-size:10px;width:22px;height:20px;padding:2px 3px;}
+  .lang-sep{font-size:9px;}
+  /* Gombok szövege rejtett mobilon */
   .btn .btn-txt{display:none}
+  /* Share gomb kisebb */
+  .btn{padding:5px 8px;}
+  .share-chevron{width:8px;height:8px;}
+  /* Animáció gomb rejtett mobilon (nem fér el elegánsan) */
+  #btnRec{display:none!important;}
+
   .toast{bottom:130px}
   .canvas-hint{bottom:8px;font-size:10px}
-  .lang-btn{font-size:13px;width:26px;height:22px}
   /* Exponáló gomb kisebb mobilon */
   .cam-shutter{width:46px!important;height:46px!important;border-width:4px!important}
   .cam-controls{gap:12px!important;padding:9px 16px!important}
@@ -3321,7 +3359,22 @@ function toast(msg,dur=2200){
   const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
   clearTimeout(toastTmr);toastTmr=setTimeout(()=>el.classList.remove('show'),dur);
 }
-window.addEventListener('resize',()=>{clearFilterCache();if(origImg&&currentAnim==='none')drawFrame(null);});
+window.addEventListener('resize',()=>{clearFilterCache();if(origImg&&currentAnim==='none')drawFrame(null);updatePanelCloseBtnPos();});
+
+function updatePanelCloseBtnPos(){
+  if(window.innerWidth>768) return;
+  const tabBar=document.getElementById('m-tabs');
+  const footer=document.getElementById('m-footer');
+  let bottom=8;
+  if(tabBar&&tabBar.offsetHeight) bottom+=tabBar.offsetHeight;
+  else if(footer&&footer.offsetHeight) bottom+=footer.offsetHeight;
+  else bottom+=52;
+  document.querySelectorAll('.mobile-panel-close-btn').forEach(btn=>{
+    btn.style.bottom=bottom+'px';
+  });
+}
+// Kezdeti pozíció beállítása
+requestAnimationFrame(updatePanelCloseBtnPos);
 
 // ══════════════════════════════════════════
 // ══════════════════════════════════════════
@@ -3753,9 +3806,9 @@ function hideTextKbdBar(){
 
 function toggleMobilePanel(){
   document.body.classList.toggle('panel-collapsed');
-  // carea méret újraszámítás
   if(camActive) camLastFrame=0;
   else if(origImg) draw();
+  updatePanelCloseBtnPos();
 }
 
 // ══════════════════════════════════════════
