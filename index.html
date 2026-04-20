@@ -3045,14 +3045,17 @@ function buildPanel(tabId, container){
 
 function switchTab(id){
   activeTab=id;
-  // Mobilon: ha van kép és a Fotó fülre váltunk, a panel felesleges (csak meta sor lenne)
-  // → összecsukjuk; más fülnél kinyitjuk
   if(window.innerWidth<=768){
     if(id==='image' && origImg){
       document.body.classList.add('panel-collapsed');
     } else if(id!=='camera'){
       document.body.classList.remove('panel-collapsed');
     }
+  }
+  // + gomb: Fotó fülön van kép esetén rejtjük (nincs mit kinyitni)
+  const toggleBtn=document.getElementById('m-panel-toggle');
+  if(toggleBtn){
+    toggleBtn.style.display=(id==='image' && origImg && window.innerWidth<=768) ? 'none' : '';
   }
   document.querySelectorAll('[data-tab]').forEach(btn=>{
     const isCam=btn.dataset.tab==='camera';
