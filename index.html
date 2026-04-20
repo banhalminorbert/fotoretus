@@ -509,28 +509,26 @@ body:not(.cam-active-mode) #preview{
 
 
 
-/* ── Mobil panel X gomb — panel tetején sticky, tartalom görget alatta ── */
+/* ── Mobil panel topbar + toggle gomb ── */
 .mobile-panel-close-btn{ display:none; }
 .mobile-panel-topbar{ display:none; }
 @media(max-width:768px){
-  /* Panel flex column, topbar sticky, tartalom görgethető */
   .mobile-panel{
     display:flex;
     flex-direction:column;
-    overflow:hidden!important; /* külső panel nem görgethető */
+    overflow:hidden!important;
   }
   .mobile-panel-topbar{
     display:flex;
     justify-content:flex-end;
     align-items:center;
-    padding:6px 8px 4px;
-    flex-shrink:0; /* nem zsugorodik */
+    padding:5px 10px 4px;
+    flex-shrink:0;
     background:var(--bg);
     position:sticky;top:0;
     z-index:10;
     border-bottom:1px solid rgba(255,255,255,.05);
   }
-  /* A tényleges görgetési terület a topbar alatt */
   .mobile-panel-scroll{
     flex:1;
     overflow-y:auto;
@@ -546,7 +544,7 @@ body:not(.cam-active-mode) #preview{
     border-radius:50%;
     cursor:pointer;
     color:rgba(255,255,255,.7);
-    font-size:13px;line-height:1;
+    font-size:15px;line-height:1;font-weight:300;
     -webkit-tap-highlight-color:transparent;
     transition:all .18s;
     pointer-events:all;
@@ -562,49 +560,46 @@ body:not(.cam-active-mode) #preview{
   body.cam-active-mode .mobile-panel-topbar{display:none!important;}
 }
 @media(max-width:768px){
-  /* Panel wrapper: position:relative a toggle gombhoz */
   .mobile-panel{position:relative}
-  /* Toggle gomb: a panel tetején, mindig látható */
+  /* Toggle gomb (+ jel) — csak csukott állapotban látszik, jobb oldalt */
   #m-panel-toggle{
+    display:none; /* alapból rejtett — csak panel-collapsed esetén mutatjuk */
+  }
+  body.panel-collapsed #m-panel-toggle{
     display:flex;
-    align-items:center;
-    justify-content:center;
-    position:absolute;
-    top:-14px;
-    right:14px;
-    width:28px;height:28px;
+    align-items:center;justify-content:center;
+    position:fixed;
+    bottom:62px;
+    right:12px;
+    width:30px;height:30px;
     background:rgba(8,13,24,.97);
-    border:1px solid rgba(255,255,255,.18);
+    border:1.5px solid rgba(255,255,255,.22);
     border-radius:50%;
     cursor:pointer;
-    z-index:20;
-    color:rgba(255,255,255,.65);
-    font-size:11px;
-    line-height:1;
+    z-index:200;
+    color:rgba(255,255,255,.8);
+    font-size:18px;line-height:1;font-weight:300;
     -webkit-tap-highlight-color:transparent;
-    transition:all .2s;
-    box-shadow:0 2px 10px rgba(0,0,0,.6);
+    transition:all .18s;
+    box-shadow:0 2px 12px rgba(0,0,0,.6);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   }
-  #m-panel-toggle:active{transform:scale(.9);color:#fff}
-  /* Csukott állapot */
-  /* Panel összecsukva */
+  body.panel-collapsed #m-panel-toggle:active{
+    transform:scale(.88);color:#C9A84C;
+    background:rgba(201,168,76,.18);border-color:rgba(201,168,76,.5);
+  }
   body.panel-collapsed .mobile-panel{
     flex:0!important;min-height:0!important;overflow:hidden!important;
     padding:0!important;height:0!important;
   }
-  /* Ikon */
-  body.panel-collapsed #m-panel-toggle-ico::before{content:'▴'}
-  #m-panel-toggle-ico::before{content:'✕'}
-  /* Panel összecsukva: carea nagyobb */
+  /* + ikon a toggle gombon */
+  #m-panel-toggle-ico::before{content:'+'}
   body.panel-collapsed:not(.cam-active-mode) .carea{
     flex:1!important;height:auto!important;max-height:none!important;
   }
   body.panel-collapsed.cam-active-mode .carea{
-    flex:1!important;
-    height:auto!important;
-    max-height:none!important;
+    flex:1!important;height:auto!important;max-height:none!important;
   }
-  /* Kész kép módban: panel összecsukva → kép tölti ki */
   body.panel-collapsed:not(.cam-active-mode) #preview{
     max-height:75vh!important;
   }
@@ -3839,6 +3834,13 @@ function toggleMobilePanel(){
   document.body.classList.toggle('panel-collapsed');
   if(camActive) camLastFrame=0;
   else if(origImg) draw();
+  // + gomb pozíció frissítése
+  const toggle=document.getElementById('m-panel-toggle');
+  if(toggle&&window.innerWidth<=768){
+    const tabBar=document.getElementById('m-tabs');
+    const tbH=tabBar?tabBar.offsetHeight:52;
+    toggle.style.bottom=(tbH+10)+'px';
+  }
 }
 
 // ══════════════════════════════════════════
@@ -4824,6 +4826,15 @@ function frameOrCam(){
 // ══════════════════════════════════════════
 buildTabBars();
 switchTab('image');
+// + gomb kezdeti pozíció (tab-bar felett)
+requestAnimationFrame(()=>{
+  const toggle=document.getElementById('m-panel-toggle');
+  if(toggle&&window.innerWidth<=768){
+    const tabBar=document.getElementById('m-tabs');
+    const tbH=tabBar?tabBar.offsetHeight:52;
+    toggle.style.bottom=(tbH+10)+'px';
+  }
+});
 
 // ── Orientáció lock mobilon ──
 // Böngészőben a Screen Orientation API segít, de nem mindig engedélyezett
