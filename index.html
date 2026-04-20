@@ -376,7 +376,8 @@ body:not(.cam-active-mode) #preview{
     flex:1!important;height:auto!important;max-height:none!important;
   }
   body.panel-collapsed.cam-active-mode .carea{
-    height:calc(100vw * 3 / 4)!important;
+    height:min(100vw, 70vh)!important;
+    max-height:none!important;
   }
   /* Kész kép módban: panel összecsukva → kép tölti ki */
   body.panel-collapsed:not(.cam-active-mode) #preview{
@@ -538,8 +539,14 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   .app{flex-direction:column;overflow:hidden;flex:1;min-height:0}
   .sidebar{display:none}
   .carea{order:1;flex:none;height:50vh;min-height:220px;max-height:75vh;border-bottom:1px solid rgba(255,255,255,.04)}
-  /* Live mód ALAPNÉZET: 4:3 kamera kép, panel + tabbar látható alatta */
-  body.cam-active-mode .carea{height:calc(100vw * 3 / 4);flex:none;min-height:200px;max-height:60vh}
+  /* Live mód ALAPNÉZET: 1:1 kamera kép (négyzet), panel + tabbar látható alatta */
+  body.cam-active-mode .carea{
+    width:100%;
+    height:100vw;
+    flex:none;
+    min-height:180px;
+    max-height:min(65vw, 60vh);
+  }
   body.cam-active-mode #m-footer{display:none!important}
   body.cam-active-mode .mobile-panel{display:flex!important}
   body.cam-active-mode .mobile-tab-bar{display:flex!important}
@@ -1115,7 +1122,7 @@ const AR_BTNS=[
 ];
 const TABS=[
   {id:'camera', icoKey:'tabCamera',  ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="5" width="16" height="11" rx="2"/><circle cx="9" cy="10.5" r="3"/><path d="M5.5 5V4h4v1"/><circle cx="14.5" cy="7" r="1" fill="currentColor" stroke="none"/></svg>', action:'camera'},
-  {id:'image',  icoKey:'tabImage',   ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="3" x2="9" y2="15"/><line x1="3" y1="9" x2="15" y2="9"/></svg>'},
+  {id:'image',  icoKey:'tabImage',   ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="3" x2="9" y2="15"/><line x1="3" y1="9" x2="15" y2="9"/></svg>', action:'upload'},
   {id:'filters',icoKey:'tabFilters', ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h14M4 9h10M7 14h4"/></svg>'},
   {id:'adjust', icoKey:'tabAdjust',  ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="1" y1="5" x2="17" y2="5"/><line x1="1" y1="9" x2="17" y2="9"/><line x1="1" y1="13" x2="17" y2="13"/><circle cx="5" cy="5" r="2" fill="var(--surf)"/><circle cx="11" cy="9" r="2" fill="var(--surf)"/><circle cx="7" cy="13" r="2" fill="var(--surf)"/></svg>'},
   {id:'frame',  icoKey:'tabFrame',   ico:'<svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="1.5" width="15" height="15" rx="2"/><rect x="4.5" y="4.5" width="9" height="9" rx="1"/></svg>'},
@@ -1362,23 +1369,18 @@ function canvasSize(){
   const ca=document.getElementById('carea');
   const maxW=ca.clientWidth, maxH=ca.clientHeight;
   if(!origImg){
-    // Live módban: Free=videó natív aránya, egyéb=fix arány
+    // Live módban: fix 1:1 arány (négyzet)
     const isMobile = window.innerWidth <= 768;
-    const vidAR = (typeof camVideo!=='undefined' && camVideo && camVideo.videoWidth && camVideo.videoHeight)
-      ? camVideo.videoWidth / camVideo.videoHeight : 4/3;
-    const tAR = (currentAR==='original') ? vidAR : (arNum(currentAR) || vidAR);
-    let w, h;
+    let side;
     if(isMobile){
-      // Mobilon: a canvas töltse ki a TELJES carea-t, cover renderelés nem vágja le
-      w=maxW; h=maxH;
+      // Mobilon: a carea szélessége adja a négyzet oldalát
+      side = maxW;
     } else {
-      // Asztali: vékony fekete sáv felül-alul
+      // Asztali: kisebb dimenzióból számolunk, kis padding
       const pad = 14;
-      const maxH2 = maxH - pad*2;
-      if(maxW/maxH2 >= tAR){ h=maxH2; w=Math.round(h*tAR); }
-      else { w=maxW; h=Math.round(w/tAR); }
+      side = Math.min(maxW, maxH - pad*2);
     }
-    return{w, h};
+    return{w:side, h:side};
   }
   const imgAR=origImg.width/origImg.height;
   const isMob=window.innerWidth<=768;
@@ -2309,17 +2311,11 @@ function buildPanel_Image(container){
     uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('over');const f=e.dataTransfer?.files[0];if(f&&f.type.startsWith('image/'))loadImg(f);});
     uploadSec.appendChild(uz);
   } else {
-    const thumbDiv=document.createElement('div');thumbDiv.className='imginfo vis';
-    // Meta sor — ikon + szöveg
-    const meta=document.createElement('div');meta.className='imeta';
-    meta.innerHTML=`<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".5"><rect x="1" y="2" width="14" height="12" rx="2"/><circle cx="5.5" cy="7" r="1.5"/><path d="M1 11l4-3 3 2.5 3-2.5 4 3"/></svg><span>${_imgMetaStr||''}</span>`;
-    // Csere gomb — kis kompakt gomb alul
-    const chg=document.createElement('button');chg.className='btn btn-sec';
-    chg.style.cssText='font-size:10px;padding:3px 10px;gap:5px;margin-top:6px;opacity:.65;border-radius:6px';
-    chg.innerHTML=`<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8a7 7 0 0 1 12-4.9"/><path d="M15 8a7 7 0 0 1-12 4.9"/><polyline points="12,1 15,3.1 12.5,6"/><polyline points="4,15 1,12.9 3.5,10"/></svg>${T('changeImg')}`;
-    chg.addEventListener('click',()=>document.getElementById('fileinput').click());
-    thumbDiv.appendChild(meta);thumbDiv.appendChild(chg);
-    uploadSec.appendChild(thumbDiv);
+    // Kép már betöltve: csak egy diszkrét meta sor, Csere gomb nincs
+    const metaRow=document.createElement('div');
+    metaRow.style.cssText='display:flex;align-items:center;gap:6px;padding:6px 2px;opacity:.45;font-size:10px;letter-spacing:.04em;text-transform:uppercase';
+    metaRow.innerHTML=`<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".7"><rect x="1" y="2" width="14" height="12" rx="2"/><circle cx="5.5" cy="7" r="1.5"/><path d="M1 11l4-3 3 2.5 3-2.5 4 3"/></svg><span>${_imgMetaStr||''}</span>`;
+    uploadSec.appendChild(metaRow);
   }
 }
 
@@ -2680,6 +2676,15 @@ function buildTabBars(){
       if(isCam){
         btn.id='btnCam';
         btn.addEventListener('click',()=>camToggle());
+      } else if(t.action==='upload'){
+        btn.addEventListener('click',()=>{
+          if(origImg){
+            // Már van kép → felajánlja az új kép feltöltését
+            document.getElementById('fileinput').click();
+          } else {
+            switchTab(t.id);
+          }
+        });
       } else {
         btn.addEventListener('click',()=>switchTab(t.id));
       }
@@ -3385,19 +3390,16 @@ function camLoop(ts){
   // Mirror to fullscreen canvas if active
   if(camFsActive&&_camFsCanvas&&_camFsCtx){
     if(_camFsPortrait){
-      // Mobilon portrait fullscreen: 3:4 arány
-      // A szűrők már benne vannak a _camPrvCanvas-ban (w×h méretű, szűrőzött)
-      // Skálázzuk fel a portrait canvas méretébe
+      // Mobilon fullscreen: 1:1 négyzet arány
       const fsW=window.innerWidth;
       const fsH=window.innerHeight;
-      const pW=Math.min(fsW,Math.round(fsH*3/4));
-      const pH=Math.round(pW*4/3);
-      if(_camFsCanvas.width!==pW||_camFsCanvas.height!==pH){
-        _camFsCanvas.width=pW;_camFsCanvas.height=pH;
+      const side=Math.min(fsW,fsH); // négyzet: kisebb dimenzió
+      if(_camFsCanvas.width!==side||_camFsCanvas.height!==side){
+        _camFsCanvas.width=side;_camFsCanvas.height=side;
       }
       // _camPrvCanvas-ból rajzolunk — szűrők megmaradnak!
-      _camFsCtx.clearRect(0,0,pW,pH);
-      _camFsCtx.drawImage(_camPrvCanvas,0,0,w,h,0,0,pW,pH);
+      _camFsCtx.clearRect(0,0,side,side);
+      _camFsCtx.drawImage(_camPrvCanvas,0,0,w,h,0,0,side,side);
     } else {
       if(_camFsCanvas.width!==w||_camFsCanvas.height!==h){_camFsCanvas.width=w;_camFsCanvas.height=h;}
       _camFsCtx.drawImage(_camPrvCanvas,0,0);
