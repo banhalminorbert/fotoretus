@@ -13,6 +13,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Dancing+Script:wght@600&family=Playfair+Display:wght@700&family=Bebas+Neue&family=Pacifico&family=Oswald:wght@600&family=Montserrat:wght@600;700&family=Josefin+Sans:wght@600&family=Nunito:wght@700;800&family=Lora:ital,wght@0,700;1,600&family=Cinzel:wght@700&family=Lobster&family=Abril+Fatface&family=Rock+Salt&family=Permanent+Marker&family=Righteous&display=swap" rel="stylesheet">
 <style>
+/* Offline font fallback stack — ha a Google Fonts nem elérhető */
+body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+</style>
+<style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#080D18;--surf:#0E1525;--card:#131D30;--card2:#192338;--card3:#1F2B42;
@@ -902,10 +906,11 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
 .share-sep{height:1px;background:rgba(255,255,255,.07);margin:4px 0}
 </style>
 <script>
-// ── SERVICE WORKER (inline blob) — offline cache ──
+// ── SERVICE WORKER (inline blob) — offline cache + Google Fonts ──
 if('serviceWorker' in navigator){
   const swCode=`
-const CACHE='vipach-v7';
+const CACHE='vipach-v8';
+const FONT_CACHE='vipach-fonts-v1';
 const ASSETS=[
   self.location.href.replace(/\\/[^\\/]*$/, '/') || '/',
 ];
@@ -914,10 +919,31 @@ self.addEventListener('install',e=>{
   self.skipWaiting();
 });
 self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  e.waitUntil(caches.keys().then(keys=>Promise.all(
+    keys.filter(k=>k!==CACHE&&k!==FONT_CACHE).map(k=>caches.delete(k))
+  )));
   self.clients.claim();
 });
 self.addEventListener('fetch',e=>{
+  const url=e.request.url;
+  // Google Fonts: külön cache, no-cors módban
+  if(url.includes('fonts.googleapis.com')||url.includes('fonts.gstatic.com')){
+    e.respondWith(
+      caches.open(FONT_CACHE).then(cache=>{
+        return cache.match(e.request).then(cached=>{
+          if(cached) return cached;
+          return fetch(e.request,{mode:'cors',credentials:'omit'}).then(resp=>{
+            if(resp&&resp.status===200){
+              cache.put(e.request,resp.clone());
+            }
+            return resp;
+          }).catch(()=>cached||new Response('',{status:408}));
+        });
+      })
+    );
+    return;
+  }
+  // Minden más: cache-first, hálózat fallback
   e.respondWith(caches.match(e.request).then(cached=>{
     const fresh=fetch(e.request).then(r=>{
       if(r.ok&&e.request.method==='GET'){
@@ -943,7 +969,7 @@ self.addEventListener('fetch',e=>{
 <header class="hdr">
   <div class="logo">
     <a href="https://hu.wikipedia.org/wiki/VIPACH" target="_blank" rel="noopener" class="logo-text logo-text-full logo-link">VIPACH <span style="font-weight:300;letter-spacing:.06em">PHOTOSTUDIO</span></a>
-    <a href="https://hu.wikipedia.org/wiki/VIPACH" target="_blank" rel="noopener" class="logo-text logo-text-short logo-link">VIPACH</a>
+    <a href="https://hu.wikipedia.org/wiki/VIPACH" target="_blank" rel="noopener" class="logo-text logo-text-short logo-link">VIPACH <span style="font-weight:300;letter-spacing:.05em;font-size:11px">PHOTOSTUDIO</span></a>
     <span class="logo-badge">v.7</span>
     <!-- LIVE badge a headerben — csak cam-active módban látszik -->
     <span id="hdr-live-badge">● LIVE</span>
@@ -3322,74 +3348,44 @@ function injectMetadata(blob){
 }
 
 async function dlBlob(blob,name){
-  // EXIF/metadata injektálás
   try{ blob=await injectMetadata(blob); }catch(e){}
 
   const ua=navigator.userAgent||'';
   const isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
-  const isSafari=isIOS&&/Safari/.test(ua)&&!/CriOS|FxiOS|OPiOS/.test(ua);
 
-  // iOS Safari: Web Share API elsőként
-  if(isIOS && navigator.share && navigator.canShare){
-    const file=new File([blob],name,{type:blob.type||'image/jpeg'});
-    try{
-      if(navigator.canShare({files:[file]})){
-        await navigator.share({files:[file],title:'VIPACH Photo'});
-        return;
+  // ── iOS: Web Share API — egyetlen megbízható módszer ──
+  if(isIOS){
+    if(navigator.share && navigator.canShare){
+      const file=new File([blob],name,{type:blob.type||'image/jpeg'});
+      try{
+        if(navigator.canShare({files:[file]})){
+          await navigator.share({files:[file],title:'VIPACH Photo'});
+          return;
+        }
+      }catch(e){
+        if(e.name==='AbortError') return; // felhasználó visszalépett
       }
-    }catch(e){ if(e.name==='AbortError') return; /* user cancelled */ }
+    }
+    // iOS fallback: blob URL megnyitása — a felhasználó long-press-sel mentheti
+    const url=URL.createObjectURL(blob);
+    window.location.href=url;
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+    toast('📥 Tartsd nyomva a képet → Kép mentése',4000);
+    return;
   }
 
-  // iOS + Android fallback: data URL alapú letöltés
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const dataUrl=ev.target.result;
-    if(isIOS){
-      // iOS-on popup helyett: objektURL link az oldalon belül mutatva
-      const objUrl=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=objUrl;
-      a.download=name;
-      a.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(()=>{
-        try{document.body.removeChild(a);}catch(x){}
-        URL.revokeObjectURL(objUrl);
-      },3000);
-      // Toast tájékoztató
-      toast('📥 Kép megnyitva — tartsd nyomva → Kép mentése');
-      return;
-    }
-    // Android + Desktop: data URL alapú <a download>
-    try{
-      const a=document.createElement('a');
-      a.href=dataUrl;
-      a.download=name;
-      a.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
-      document.body.appendChild(a);
-      a.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
-      setTimeout(()=>{ try{document.body.removeChild(a);}catch(x){} },2000);
-    }catch(e){
-      // Végső fallback
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;a.download=name;
-      a.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(()=>{ try{document.body.removeChild(a);}catch(x){} URL.revokeObjectURL(url); },3000);
-    }
-  };
-  reader.onerror=()=>{
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=name;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ try{document.body.removeChild(a);}catch(x){} URL.revokeObjectURL(url); },3000);
-  };
-  reader.readAsDataURL(blob);
+  // ── Android + Desktop: közvetlen blob URL letöltés ──
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=name;
+  a.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{
+    try{document.body.removeChild(a);}catch(x){}
+    URL.revokeObjectURL(url);
+  },5000);
 }
 
 function toggleRec(){if(recording)stopRec();else startRec();}
