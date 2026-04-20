@@ -119,9 +119,29 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .logo-badge{font-size:8px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:3px;padding:2px 5px;align-self:flex-start;margin-top:1px}
 .hdr-right{display:flex;gap:8px;align-items:center;flex-shrink:0}
 /* ── FOOTER COUNTER ── */
-.footer-counter-inline{display:flex;align-items:center;flex-shrink:0}
-.footer-counter-value{font-size:10px;font-family:'DM Sans',monospace;letter-spacing:.16em;color:rgba(201,168,76,.45);font-weight:400;transition:color .4s;user-select:none}
-.footer-counter-value.loaded{color:rgba(201,168,76,.65)}
+.footer-counter-box{
+  display:flex;align-items:center;gap:5px;
+}
+.footer-counter-eye{
+  font-size:9px;opacity:.5;line-height:1;
+}
+.footer-counter-value{
+  font-size:10px;font-family:'DM Sans',monospace;
+  letter-spacing:.16em;color:rgba(201,168,76,.45);
+  font-weight:400;transition:color .4s;user-select:none;
+}
+.footer-counter-value.loaded{color:rgba(201,168,76,.75)}
+/* Mobil: alsó sor — bal: copyright, jobb: számláló */
+.app-footer-bottom-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:2px;
+}
+/* Asztali: számláló sor középre igazítva */
+.app-footer-counter-row{
+  margin-top:6px;padding-top:5px;
+  border-top:1px solid rgba(255,255,255,.04);
+  display:flex;justify-content:center;
+}
 
 /* ── LANGUAGE SELECTOR ── */
 .lang-sel{display:flex;align-items:center;gap:0;background:none;border:none;padding:0;flex-shrink:0}
@@ -684,12 +704,10 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
 .app-footer{flex-shrink:0;padding:12px 14px 14px;border-top:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:3px}
 .app-footer-name{font-size:10px;font-weight:300;letter-spacing:.05em;color:rgba(255,255,255,.45);text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0;overflow:hidden}
 .app-footer-name>span:first-child,.app-footer-name>*:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.footer-counter-inline{flex-shrink:0;margin-left:6px}
 .app-footer-name strong{font-weight:600;color:rgba(255,255,255,.55);letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .app-footer-sub{font-size:8.5px;font-weight:300;letter-spacing:.07em;color:rgba(255,255,255,.22);text-transform:uppercase;display:flex;align-items:center;gap:6px}
 .app-footer-sub span{display:flex;align-items:center;gap:4px}
 .app-footer-dot{width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0}
-.app-footer-counter-row{margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,.04)}
 
 .share-wrap{position:relative;flex-shrink:0}
 .share-chevron{margin-left:1px;transition:transform .18s;flex-shrink:0}
@@ -809,7 +827,10 @@ self.addEventListener('fetch',e=>{
           <span class="footer-rights">Minden jog fenntartva</span>
         </div>
         <div class="app-footer-counter-row">
-          <span id="visit-ctr" class="footer-counter-value">········</span>
+          <div class="footer-counter-box">
+            <span class="footer-counter-eye">👁</span>
+            <span id="visit-ctr" class="footer-counter-value">········</span>
+          </div>
         </div>
       </footer>
     </div>
@@ -879,12 +900,17 @@ self.addEventListener('fetch',e=>{
 <footer class="app-footer" id="m-footer" style="background:var(--surf);border-top:1px solid rgba(255,255,255,.05)">
   <div class="app-footer-name">
     <span><span class="footer-by">Készítette</span>: <strong class="footer-team">Be Smart Kids Club csapata</strong></span>
-    <span class="footer-counter-inline"><span id="visit-ctr-m" class="footer-counter-value">········</span></span>
   </div>
-  <div class="app-footer-sub">
-    <span>© 2026</span>
-    <div class="app-footer-dot"></div>
-    <span class="footer-rights">Minden jog fenntartva</span>
+  <div class="app-footer-bottom-row">
+    <div class="app-footer-sub">
+      <span>© 2026</span>
+      <div class="app-footer-dot"></div>
+      <span class="footer-rights">Minden jog fenntartva</span>
+    </div>
+    <div class="footer-counter-box">
+      <span class="footer-counter-eye">👁</span>
+      <span id="visit-ctr-m" class="footer-counter-value">········</span>
+    </div>
   </div>
 </footer>
 
