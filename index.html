@@ -112,8 +112,52 @@ body{display:flex;flex-direction:column;overflow:hidden}
 #cam-fs-bar{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:22px;padding:16px 24px 32px;background:linear-gradient(transparent,rgba(0,0,0,.7));z-index:2}
 #cam-fs-badge{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.1em;animation:blnk 1.4s infinite}
 
-/* ── HEADER ── */
-.hdr{background:rgba(8,13,24,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06);padding:0 20px;height:var(--hdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px;z-index:10;position:sticky;top:0}
+/* ── HEADER LIVE BADGE ── */
+#hdr-live-badge{
+  display:none;
+  font-size:9px;font-weight:700;letter-spacing:.08em;
+  color:#fff;background:var(--red);
+  border-radius:20px;padding:2px 8px;
+  animation:blnk 1.4s infinite;
+  white-space:nowrap;
+  margin-left:2px;
+  align-self:center;
+}
+body.cam-active-mode #hdr-live-badge{display:inline-flex;align-items:center;gap:4px;}
+/* Asztali: #cam-badge a kamera képen marad */
+@media(min-width:769px){
+  #hdr-live-badge{display:none!important;}
+}
+/* Mobilon: portrait btn a top-barban NE látsszon (mert a cam-controls-ban van) */
+@media(max-width:768px){
+  .cam-top-bar{display:none!important;}
+  /* cam-controls: mobilon portré gomb látszik, X rejtett */
+  .cam-portrait-mobile-btn{display:flex!important;}
+  .cam-close-desktop{display:none!important;}
+}
+/* Asztali: portré mobile btn rejtett, X látszik */
+@media(min-width:769px){
+  .cam-portrait-mobile-btn{display:none!important;}
+  .cam-close-desktop{display:flex!important;}
+  /* Asztali: cam-top-bar visszaáll az eredeti pozíciós stílusra */
+  .cam-top-bar{
+    display:flex!important;
+    background:transparent!important;
+    position:absolute!important;
+    top:12px;right:12px;left:auto!important;
+    width:auto!important;
+    padding:0!important;
+  }
+  .cam-top-bar #cam-portrait-btn{
+    position:relative!important;top:auto!important;right:auto!important;
+  }
+}
+/* Portré gomb aktív állapot szinkron a ctrl gombra is */
+body.portrait-active #cam-portrait-ctrl-btn{
+  background:rgba(201,168,76,.3)!important;
+  border-color:#C9A84C!important;
+  color:#C9A84C!important;
+}background:rgba(8,13,24,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06);padding:0 20px;height:var(--hdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px;z-index:10;position:sticky;top:0}
 .logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .logo-text{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
 .logo-badge{font-size:8px;font-weight:700;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:3px;padding:2px 5px;align-self:flex-start;margin-top:1px}
@@ -747,38 +791,6 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
     justify-content:flex-end!important;
     align-items:center!important;
   }
-  /* Felső sáv: badge + portré gomb */
-  #cam-overlay #cam-badge{
-    position:relative;
-    top:auto;left:auto;
-    transform:none;
-    margin:12px auto 0;
-    align-self:center;
-  }
-  /* Felső sáv: LIVE badge + PORTRÉ gomb */
-  .cam-top-bar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    width:100%;
-    padding:12px 14px 8px;
-    flex-shrink:0;
-    background:transparent;
-    position:absolute;
-    top:0;left:0;right:0;
-    z-index:3;
-  }
-  /* Badge a top-barban: normál flow */
-  .cam-top-bar #cam-badge{
-    position:relative!important;
-    top:auto!important;left:auto!important;
-    transform:none!important;
-  }
-  /* Portrait gomb a top-barban */
-  .cam-top-bar #cam-portrait-btn{
-    position:relative!important;
-    top:auto!important;right:auto!important;
-  }
   /* Alsó vezérlők: elegáns sávban */
   body.cam-active-mode .cam-controls{
     margin-bottom:16px!important;
@@ -870,7 +882,10 @@ self.addEventListener('fetch',e=>{
   <div class="logo">
     <span class="logo-text logo-text-full">VIPACH <span style="font-weight:300;letter-spacing:.06em">PHOTOSTUDIO</span></span>
     <span class="logo-text logo-text-short">VIPACH</span>
-    <span class="logo-badge">v.7</span>    <button class="help-ico-btn" onclick="document.getElementById('help-modal').classList.add('open')" title="Segítség / Útmutató">
+    <span class="logo-badge">v.7</span>
+    <!-- LIVE badge a headerben — csak cam-active módban látszik -->
+    <span id="hdr-live-badge">● LIVE</span>
+    <button class="help-ico-btn" onclick="document.getElementById('help-modal').classList.add('open')" title="Segítség / Útmutató">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <circle cx="10" cy="10" r="9" stroke="rgba(201,168,76,.7)" stroke-width="1.2" fill="rgba(201,168,76,.08)"/>
         <text x="10" y="14.5" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" font-weight="500" fill="#C9A84C">?</text>
@@ -957,9 +972,8 @@ self.addEventListener('fetch',e=>{
     <div class="canvas-hint" id="canvas-hint"></div>
     <div id="cam-overlay">
       <div class="cam-flash" id="cam-flash"></div>
-      <!-- Felső sáv: LIVE badge + PORTRÉ gomb -->
+      <!-- Felső sáv: csak PORTRÉ gomb mobilon -->
       <div class="cam-top-bar">
-        <div id="cam-badge">● LIVE</div>
         <button id="cam-portrait-btn" onclick="togglePortraitMode()" title="Portré mód — háttér elmosás">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
           <circle cx="8" cy="5" r="2.5"/>
@@ -983,7 +997,15 @@ self.addEventListener('fetch',e=>{
         <span id="cam-portrait-slval">12px</span>
       </div>
       <div class="cam-controls">
-        <button class="cam-icon-btn" id="cam-close" title="Kamera bezárása" onclick="camStop()">
+        <!-- Mobilon: X helyett PORTRÉ gomb (csak mobilon látszik, CSS szabályozza) -->
+        <button class="cam-icon-btn cam-portrait-mobile-btn" id="cam-portrait-ctrl-btn" onclick="togglePortraitMode()" title="Portré mód">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="8" cy="5" r="2.5"/>
+            <path d="M3 14c0-3 2-5 5-5s5 2 5 5"/>
+          </svg>
+        </button>
+        <!-- Asztali X gomb (mobilon rejtett) -->
+        <button class="cam-icon-btn cam-close-desktop" id="cam-close" title="Kamera bezárása" onclick="camStop()">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/></svg>
         </button>
         <button class="cam-shutter" id="cam-shutter" onclick="camCapture()" title="Fénykép készítése"></button>
@@ -3512,8 +3534,13 @@ function onSegResults(results){
 
 async function togglePortraitMode(){
   portraitMode = !portraitMode;
+  // Body class szinkron (CSS alapú aktív állapothoz)
+  document.body.classList.toggle('portrait-active', portraitMode);
   const btn = document.getElementById('cam-portrait-btn');
   if(btn) btn.classList.toggle('active', portraitMode);
+  // Mobil cam-controls portré gomb szinkron
+  const ctrlBtn = document.getElementById('cam-portrait-ctrl-btn');
+  if(ctrlBtn) ctrlBtn.classList.toggle('btn-cam-active', portraitMode);
   // Fullscreen portré gomb szinkronizálása
   const fsBtn = document.getElementById('cam-fs-portrait-btn');
   if(fsBtn) fsBtn.style.background = portraitMode ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.22)';
