@@ -95,20 +95,19 @@ body{display:flex;flex-direction:column;overflow:hidden}
   display:block;
 }
 @media(max-width:768px){
-  #cam-fs-canvas{
-    width:100vw;
-    height:100vh;
-    object-fit:cover;
-  }
+  #cam-fs-canvas{width:100vw;height:100vh;object-fit:cover;}
   #cam-fs-bar{
     position:absolute;
     bottom:max(24px, env(safe-area-inset-bottom, 16px));
-    left:0;right:0;
-    display:flex;
-    justify-content:center;
+    left:0;right:0;display:flex;justify-content:center;
     background:linear-gradient(transparent, rgba(0,0,0,.7));
     padding:20px 24px max(20px, env(safe-area-inset-bottom, 16px));
   }
+  /* Fullscreen módban panel + tabbar eltűnik */
+  body.cam-fs-mode .mobile-tab-bar{display:none!important}
+  body.cam-fs-mode .mobile-panel{display:none!important}
+  body.cam-fs-mode #m-panel-toggle{display:none!important}
+  body.cam-fs-mode #m-footer{display:none!important}
 }
 #cam-fs-bar{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:22px;padding:16px 24px 32px;background:linear-gradient(transparent,rgba(0,0,0,.7));z-index:2}
 #cam-fs-badge{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.1em;animation:blnk 1.4s infinite}
@@ -364,21 +363,24 @@ body:not(.cam-active-mode) #preview{
   }
   #m-panel-toggle:active{transform:scale(.9);color:#fff}
   /* Csukott állapot */
+  /* Panel összecsukva */
   body.panel-collapsed .mobile-panel{
-    flex:0!important;
-    min-height:0!important;
-    overflow:hidden!important;
-    padding:0!important;
-    height:0!important;
+    flex:0!important;min-height:0!important;overflow:hidden!important;
+    padding:0!important;height:0!important;
   }
-  /* Ikon: nyitott=▾, csukott=▴ */
+  /* Ikon */
   body.panel-collapsed #m-panel-toggle-ico::before{content:'▴'}
   #m-panel-toggle-ico::before{content:'✕'}
-  /* Carea nagyobb ha panel össze van csukva */
+  /* Panel összecsukva: carea nagyobb */
   body.panel-collapsed:not(.cam-active-mode) .carea{
-    flex:1!important;
-    height:auto!important;
-    max-height:none!important;
+    flex:1!important;height:auto!important;max-height:none!important;
+  }
+  body.panel-collapsed.cam-active-mode .carea{
+    height:calc(100vw * 3 / 4)!important;
+  }
+  /* Kész kép módban: panel összecsukva → kép tölti ki */
+  body.panel-collapsed:not(.cam-active-mode) #preview{
+    max-height:75vh!important;
   }
 }
 /* ── Live módban Fotó panel rejtett ── */
@@ -536,15 +538,21 @@ body.cam-active-mode .mtab[data-tab="camera"]::after{
   .app{flex-direction:column;overflow:hidden;flex:1;min-height:0}
   .sidebar{display:none}
   .carea{order:1;flex:none;height:50vh;min-height:220px;max-height:75vh;border-bottom:1px solid rgba(255,255,255,.04)}
-  /* Kamera aktív módban: 4:3 arány */
-  body.cam-active-mode .carea{height:100%;flex:1;min-height:0;max-height:none}
-  /* Live módban tab bar, panel és footer elrejtése → kamera tölti ki ÉS megmarad a panel */
-  body.cam-active-mode .mobile-tab-bar{display:none!important}
+  /* Live mód ALAPNÉZET: 4:3 kamera kép, panel + tabbar látható alatta */
+  body.cam-active-mode .carea{height:calc(100vw * 3 / 4);flex:none;min-height:200px;max-height:60vh}
   body.cam-active-mode #m-footer{display:none!important}
-  body.cam-active-mode .mobile-panel{display:none!important}
-  body.cam-active-mode #m-panel-toggle{display:none!important}
+  body.cam-active-mode .mobile-panel{display:flex!important}
+  body.cam-active-mode .mobile-tab-bar{display:flex!important}
+  body.cam-active-mode #m-panel-toggle{display:flex!important}
   /* Szerkesztő módban: a kép határozza meg a magasságot */
-  body:not(.cam-active-mode) .carea{height:auto;min-height:180px;max-height:75vh;overflow:visible}
+  body:not(.cam-active-mode) .carea{height:auto;min-height:180px;max-height:60vh;overflow:visible}
+  /* Kész kép + panel nyitva: kép középen, panel alul */
+  body:not(.cam-active-mode):not(.panel-collapsed) .carea{max-height:45vh}
+  /* Kész kép + panel csukva: kép nagy */
+  body.panel-collapsed:not(.cam-active-mode) .carea{
+    max-height:none!important;height:auto!important;flex:1!important;
+    border-bottom:none!important;
+  }
   .mobile-tab-bar{display:flex;order:3;background:rgba(8,13,24,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .mobile-tab-bar::-webkit-scrollbar{display:none}
   .mtab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.8);font-size:8.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 13px;transition:color .15s;border-top:1.5px solid transparent;-webkit-tap-highlight-color:transparent;position:relative}
@@ -2634,6 +2642,10 @@ function buildPanel(tabId, container){
 
 function switchTab(id){
   activeTab=id;
+  // Mobilon tab váltáskor panel kinyílik
+  if(window.innerWidth<=768 && id!=='camera'){
+    document.body.classList.remove('panel-collapsed');
+  }
   document.querySelectorAll('[data-tab]').forEach(btn=>{
     const isCam=btn.dataset.tab==='camera';
     btn.classList.toggle('active',!isCam && btn.dataset.tab===id);
@@ -3062,13 +3074,11 @@ function camFullscreen(){
   _camFsCtx=_camFsCanvas.getContext('2d');
   wrap.classList.add('active');
   camFsActive=true;
-  // Mobilon: portrait 3:4 arány a fullscreen kameránál
   const isMobile=window.innerWidth<=768;
   if(isMobile){
-    const fsW=window.screen.width*window.devicePixelRatio||window.innerWidth;
-    const fsH=window.screen.height*window.devicePixelRatio||window.innerHeight;
-    // 3:4 portrait arány: szélességből számítjuk
     _camFsPortrait=true;
+    // Fullscreen módban: tab bar + panel eltűnik
+    document.body.classList.add('cam-fs-mode');
   } else {
     _camFsPortrait=false;
   }
@@ -3102,6 +3112,7 @@ function camExitFullscreen(){
   camFsActive=false;
   _camFsPortrait=false;
   document.getElementById('cam-fs-wrap').classList.remove('active');
+  document.body.classList.remove('cam-fs-mode');
   // FS slider reset — ne ragadjon be
   const _fssl=document.getElementById('cam-fs-portrait-slider');
   if(_fssl) _fssl.style.display='none';
@@ -3447,16 +3458,18 @@ async function camCapture(){
     if(cap.text.trim()) drawCaption(oc,vw,vh);
   }
   const fname='VIPACH_'+Date.now()+'.jpg';
-  // Kép betöltése az editorba — natív videó arányban
-  // currentAR resetelése: a kamera képe a videó natív arányú, ne legyen crop
+  // Kép betöltése — natív videó arányban
   currentAR = 'original';
   cropX=0.5; cropY=0.5; cropZoom=1.0;
-  // AR gombok szinkronizálása
   document.querySelectorAll('.arbtn').forEach(b=>{
     b.classList.toggle('active', b.dataset.ar === 'original');
   });
   loadImgFromCanvas(finalCanvas);
   camStop();
+  // Mobilon: kész kép után panel összecsukva → teljes kép látható
+  if(window.innerWidth<=768){
+    document.body.classList.add('panel-collapsed');
+  }
   toast(T('camCaptured'));
 }
 
