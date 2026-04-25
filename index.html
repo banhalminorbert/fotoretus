@@ -1725,10 +1725,9 @@ function canvasSize(){
   const isMob=window.innerWidth<=768;
   // Reszponzív méretezés: kép kitölti a rendelkezésre álló szélességet
   const maxW2=isMob ? ca.clientWidth : ca.clientWidth*0.96;
-  // Mobilon: minden képarányhoz helyes magasság-számítás
-  // Landscape: magasság = szélesség / imgAR
-  // Portrait: magasság = szélesség * (1/imgAR) de max 75vh
-  const maxH2=isMob ? Math.min(imgAR>=1 ? ca.clientWidth/imgAR : ca.clientWidth/imgAR, window.innerHeight*0.75) : ca.clientHeight*0.96;
+  // Mobilon: a kiválasztott képarányhoz igazított magasság-korlát
+  const _targetAR=arNum(currentAR)??imgAR;
+  const maxH2=isMob ? Math.min(ca.clientWidth/_targetAR, window.innerHeight*0.75) : ca.clientHeight*0.96;
 
   if(frameType==='polaroid'){
     // Polaroid outer AR: inner image (selected AR or original image AR) + borders
@@ -1738,7 +1737,7 @@ function canvasSize(){
     // innerW = outerW*(1-0.11), innerH = outerH - outerW*0.255
     // innerAR = innerW/innerH => solve for outerW/outerH
     // outerAR = innerAR*(1-0.11) / (1 - innerAR*0.255) -- if innerAR*0.255 < 1
-    const outerAR=(innerAR*0.89)/(1+innerAR*0.255);
+    const outerAR=(innerAR*0.89)/(1-innerAR*0.255);
     let w,h;
     if(outerAR>=1){w=Math.min(maxW2,maxH2*outerAR);h=w/outerAR;}
     else{h=Math.min(maxH2,maxW2/outerAR);w=h*outerAR;}
@@ -3004,17 +3003,16 @@ function buildPanel_Motion(container){
 // TAB SYSTEM
 // ══════════════════════════════════════════
 function buildPanel(tabId, container){
-  // Topbar (X gomb) megőrzése — csak a scroll tartalmat töröljük
-  let scrollDiv=container.querySelector('.mobile-panel-scroll');
-  if(scrollDiv){
-    scrollDiv.innerHTML='';
-  } else {
-    // Első futás: teljes container reset, topbar + scroll div létrehozása
-    // #m-panel-toggle megőrzése (statikus HTML elem)
-    const toggleBtn=container.querySelector('#m-panel-toggle');
-    container.innerHTML='';
-    // Topbar visszarakása ha mobilon vagyunk
-    if(window.innerWidth<=768){
+  const isMobile=window.innerWidth<=768;
+  let target;
+  if(isMobile){
+    // Mobil: topbar + scroll div struktúra megőrzése
+    let scrollDiv=container.querySelector('.mobile-panel-scroll');
+    if(scrollDiv){
+      scrollDiv.innerHTML='';
+    } else {
+      const toggleBtn=container.querySelector('#m-panel-toggle');
+      container.innerHTML='';
       const topbar=document.createElement('div');
       topbar.className='mobile-panel-topbar';
       const closeBtn=document.createElement('button');
@@ -3025,14 +3023,17 @@ function buildPanel(tabId, container){
       closeBtn.textContent='✕';
       topbar.appendChild(closeBtn);
       container.appendChild(topbar);
+      scrollDiv=document.createElement('div');
+      scrollDiv.className='mobile-panel-scroll';
+      container.appendChild(scrollDiv);
+      if(toggleBtn) container.appendChild(toggleBtn);
     }
-    scrollDiv=document.createElement('div');
-    scrollDiv.className='mobile-panel-scroll';
-    container.appendChild(scrollDiv);
-    // m-panel-toggle visszarakása (+ gomb csukott állapothoz)
-    if(toggleBtn) container.appendChild(toggleBtn);
+    target=scrollDiv;
+  } else {
+    // Asztali: minden tab váltáskor teljesen újraépítjük
+    container.innerHTML='';
+    target=container;
   }
-  const target=window.innerWidth<=768 ? scrollDiv : container;
   switch(tabId){
     case 'image':   buildPanel_Image(target);   break;
     case 'filters': buildPanel_Filters(target); break;
